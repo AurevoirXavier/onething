@@ -44,10 +44,6 @@ pub fn settle_accounts() {}
 
 #[test]
 fn test() {
-//    for path in read_dir(".").unwrap() {
-//        println!("Name: {:?}", path.unwrap().path());
-//    }
-
     for key_file_path in read_dir("wallets").unwrap() {
         let path = key_file_path.unwrap().path();
         if !path.file_name().unwrap().to_str().unwrap().starts_with("0x") { continue; }
