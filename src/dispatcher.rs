@@ -1,44 +1,36 @@
 // --- std ---
-use std::env;
-use std::fs::{File, create_dir};
-use std::io::prelude::*;
-use std::io::Write;
-use std::path::Path;
-use std::sync::{Arc, Mutex};
-use std::thread;
+use std::{
+    env,
+    fs::{File, create_dir},
+    io::Write,
+    path::Path,
+    sync::{Arc, Mutex},
+    thread,
+};
 
 // --- external ---
 use uuid::Uuid;
 
 // --- custom ---
 use crate::{
+    account::Account,
     detector::Detector,
-    account::{Account, proxy::Proxies},
+    util::{
+        init::{ACCOUNTS, CONF, ORDERS, PROXIES},
+        proxy::Proxies,
+    },
+    wallet::{gen_wallet, settle_accounts},
 };
-
-lazy_static! {
-    static ref ACCOUNTS: Vec<String> = {
-        let mut f = File::open(Path::new("accounts.txt")).unwrap();
-        let mut accounts = String::new();
-        f.read_to_string(&mut accounts).unwrap();
-
-        accounts.lines().map(|line| line.to_owned()).collect()
-    };
-
-    pub static ref PROXIES: Arc<Mutex<Proxies>> = Arc::new(Mutex::new(Proxies::new()));
-
-    pub static ref ORDERS: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(vec![]));
-}
 
 fn execute_task(t_id: u8, accounts: &[String], proxy: Option<&Arc<Mutex<Proxies>>>, kind: Option<u8>) {
     for account in accounts.iter() {
         let account: Vec<&str> = account.split('=').collect();
-        let name = account[0];
-        let pass = account[1];
+        let username = account[0];
+        let password = account[1];
 
-        println!("Account {} at {} thread.", name, t_id);
+        println!("Account {} at {} thread.", username, t_id);
 
-        match Account::new(name, pass, proxy).sign_in(false) {
+        match Account::new(username, password, proxy).sign_in(false) {
             Ok(account) => if let Some(kind) = kind { account.redeem(kind, false); } else { account.export(); }
             Err(e) => {
                 println!("{}", e);
@@ -50,7 +42,7 @@ fn execute_task(t_id: u8, accounts: &[String], proxy: Option<&Arc<Mutex<Proxies>
 
 pub fn dispatch_account(kind: Option<u8>, with_proxy: bool) {
     let mut handles = vec![];
-    for (i, accounts) in ACCOUNTS.chunks(5).enumerate() {
+    for (i, accounts) in ACCOUNTS.chunks(CONF.account_per_thread).enumerate() {
         let proxies = Arc::clone(&PROXIES);
         let handle = thread::spawn(move || {
             if with_proxy {
@@ -66,10 +58,10 @@ pub fn dispatch_account(kind: Option<u8>, with_proxy: bool) {
     for handle in handles { handle.join().unwrap(); }
 
     {
-        let dir = Path::new("order");
+        let dir = Path::new("orders");
         if !dir.exists() { create_dir(dir).unwrap(); }
     }
-    let path = format!("order/orders-{}.txt", Uuid::new_v4());
+    let path = format!("orders/orders-{}.txt", Uuid::new_v4());
     let mut f = File::create(Path::new(&path)).unwrap();
     f.write_all(
         ORDERS.lock()
@@ -81,13 +73,14 @@ pub fn dispatch_account(kind: Option<u8>, with_proxy: bool) {
 }
 
 pub fn dispatch_task(with_proxy: bool) {
-    // TODO file not found
     match env::args().collect::<Vec<String>>()[1].as_str() {
         "--redeem" => Detector::new()
             .with_proxy()
-            .with_kinds(&[1, 2, 3, 4, 5, 6])
+            .with_kinds(&CONF.kinds)
             .detect(),
         "--export" => dispatch_account(None, with_proxy),
-        _ => panic!("Unexpected args")
+//        "--transact" => settle_accounts(),
+        "--gen-wallet" => gen_wallet(),
+        _ => panic!("Unexpected args.")
     }
 }

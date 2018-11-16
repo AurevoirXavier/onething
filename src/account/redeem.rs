@@ -1,15 +1,18 @@
 // --- std ---
-use std::thread::sleep;
-use std::time::Duration;
+use std::{
+    thread::sleep,
+    time::Duration,
+};
 
 // --- external ---
 use serde_json::{Value, from_str};
 
 // --- custom ---
-use crate::dispatcher::ORDERS;
+use crate::{
+    util::init::{ORDERS, SUBMIT_ORDER_API},
+    wallet::transact,
+};
 use super::Account;
-
-pub const SUBMIT_ORDER_API: &'static str = "https://api-mall.onethingpcs.com/order/submitorder";
 
 fn build_payload(kind: u8) -> Value {
     // payload.0 -> businessid
@@ -99,7 +102,7 @@ impl<'a> Account<'a> {
                     }
                     // iRet: 0, sMsg: 成功
                     Some(0) => {
-                        save_order(&self.name, &order["data"]);
+                        save_order(&self.username, &order["data"]);
                         return 0;
                     }
                     // iRet: 10090, sMsg: 您购买的产品已售空

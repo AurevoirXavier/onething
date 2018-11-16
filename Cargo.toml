@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 chrono = "*"
+emerald-core = "*"
 lazy_static = "*"
 md5 = "*"
 rand = "*"
@@ -14,4 +15,3 @@ serde = "*"
 serde_derive = "*"
 serde_json = "*"
 uuid = "*"
-emerald-core = "*"

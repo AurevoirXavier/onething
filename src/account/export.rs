@@ -7,9 +7,8 @@
 use serde_json::{Value, from_str};
 
 // --- custom ---
+use crate::util::init::ORDER_LIST_API;
 use super::Account;
-
-const ORDER_LIST_API: &'static str = "https://api-mall.onethingpcs.com/order/list";
 
 impl<'a> Account<'a> {
     fn pull_order_list(&mut self, page: &str) -> bool {

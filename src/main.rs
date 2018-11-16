@@ -8,12 +8,17 @@ extern crate reqwest;
 extern crate serde;
 #[macro_use]
 extern crate serde_json;
+#[macro_use]
 extern crate serde_derive;
 extern crate uuid;
 
 mod account;
 mod detector;
 mod dispatcher;
+mod util;
 mod wallet;
 
-fn main() { dispatcher::dispatch_task(true); }
+// --- custom ---
+use self::dispatcher::dispatch_task;
+
+fn main() { dispatch_task(true); }

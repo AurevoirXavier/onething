@@ -1,9 +1,11 @@
 // --- std ---
-use std::fmt;
-use std::fs::{File, create_dir};
-use std::io::prelude::*;
-use std::path::Path;
-use std::time::Duration;
+use std::{
+    fmt,
+    fs::{File, create_dir},
+    io::prelude::*,
+    path::Path,
+    time::Duration,
+};
 
 // --- external ---
 use rand::Rng;
@@ -12,9 +14,8 @@ use reqwest::header::{COOKIE, SET_COOKIE, HeaderMap};
 use serde_json::{Value, from_str};
 
 // --- custom ---
+use crate::util::init::{CONF, SIGN_IN_API};
 use super::Account;
-
-const SIGN_IN_API: &'static str = "https://api-accw.onethingpcs.com/user/login";
 
 #[derive(Debug)]
 pub enum SignInError {
@@ -34,8 +35,8 @@ impl fmt::Display for SignInError {
 }
 
 impl<'a> Account<'a> {
-    fn build_payload(username: &str, pass: &[u8]) -> Vec<(String, String)> {
-        let cipher = format!("{:x}", md5::compute(pass));
+    fn build_payload(username: &str, password: &[u8]) -> Vec<(String, String)> {
+        let cipher = format!("{:x}", md5::compute(password));
         let mut tr = rand::thread_rng();
         let id = format!("{}b24fdf96f3c1ea236b849dbf936120ccef24b9fda1", tr.gen_range(100000, 999999));
         let uuid = format!("62B4A12E-A211-4EFD-A874-D80A29E{}C", tr.gen_range(1000, 9999));
@@ -99,13 +100,13 @@ impl<'a> Account<'a> {
             .danger_accept_invalid_hostnames(true)
             .default_headers(self.cookie.clone())
             .gzip(true)
-            .timeout(Duration::from_secs(5));
+            .timeout(Duration::from_secs(CONF.request_timeout));
 
         let proxy = self.ask_proxy();
         if proxy.is_empty() {
             client_builder.build().unwrap()
         } else {
-            println!("Account: {}, with proxy: {}.", self.name, proxy);  // TODO Debug
+            println!("Account: {}, with proxy: {}.", self.username, proxy);  // TODO Debug
 //            println!("{}", self.proxies.unwrap().lock().unwrap().0.len());  // TODO Debug
 
             let proxy = format!("http://{}", proxy);
@@ -115,11 +116,11 @@ impl<'a> Account<'a> {
 
     fn save_cookie(&self, cookie: &[u8]) {
         {
-            let dir = Path::new("cookie");
+            let dir = Path::new("cookies");
             if !dir.exists() { create_dir(dir).unwrap(); }
         }
 
-        let path = format!("cookie/{}", self.name);
+        let path = format!("cookies/{}", self.username);
         let path = Path::new(&path);
         let mut f = File::create(path).unwrap();
 
@@ -151,7 +152,7 @@ impl<'a> Account<'a> {
 
     pub fn sign_in(&mut self, retry: bool) -> Result<&mut Account<'a>, SignInError> {
         if !retry {
-            let path = format!("cookie/{}", self.name);
+            let path = format!("cookies/{}", self.username);
             let path = Path::new(&path);
             if path.exists() {
                 self.load_cookie_from_file(path);
@@ -159,7 +160,7 @@ impl<'a> Account<'a> {
             }
         }
 
-        let mut payload = Account::build_payload(&self.name, self.pass.as_bytes());
+        let mut payload = Account::build_payload(&self.username, self.password.as_bytes());
         let sign = Account::generate_sign(payload.clone(), "");
         payload.push(("sign".to_string(), sign));
 

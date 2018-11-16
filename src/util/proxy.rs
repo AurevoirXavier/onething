@@ -1,6 +1,8 @@
-use super::Account;
-
-const PROXY_POOL_API: &'static str = "http://api3.xiguadaili.com/ip/?tid=555538032022318&num=1000&category=2&delay=1";
+// --- custom ---
+use crate::{
+    account::Account,
+    util::init::CONF,
+};
 
 pub struct Proxies(pub Vec<String>);
 
@@ -10,11 +12,9 @@ impl Proxies {
     pub fn update(&mut self, api: &str) {
         loop {
             if let Ok(mut resp) = reqwest::get(api) {
-                self.0 = resp.text()
-                    .unwrap()
-                    .lines()
-                    .map(|line| line.to_owned())
-                    .collect();
+                let data = resp.text().unwrap();
+//                println!("{}", data);  // TODO Debug
+                self.0 = data.lines().map(|line| line.to_owned()).collect();
 
                 return;
             }
@@ -27,7 +27,7 @@ impl<'a> Account<'a> {
         if let Some(proxies) = self.proxies {
             let mut proxies = proxies.lock().unwrap();
             if proxies.0.is_empty() {
-                proxies.update(PROXY_POOL_API);
+                proxies.update(&CONF.proxy_pool_api);
             }
 
             proxies.0.pop().unwrap()
