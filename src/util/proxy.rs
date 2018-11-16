@@ -1,7 +1,10 @@
 // --- custom ---
 use crate::{
     account::Account,
-    util::init::CONF,
+    util::{
+        default_client_builder,
+        init::CONF,
+    },
 };
 
 pub struct Proxies(pub Vec<String>);
@@ -11,7 +14,11 @@ impl Proxies {
 
     pub fn update(&mut self, api: &str) {
         loop {
-            if let Ok(mut resp) = reqwest::get(api) {
+            if let Ok(mut resp) = default_client_builder()
+                .build()
+                .unwrap()
+                .get(api)
+                .send() {
                 let data = resp.text().unwrap();
 //                println!("{}", data);  // TODO Debug
                 self.0 = data.lines().map(|line| line.to_owned()).collect();

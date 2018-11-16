@@ -4,7 +4,6 @@ use std::{
     fs::{File, create_dir},
     io::prelude::*,
     path::Path,
-    time::Duration,
 };
 
 // --- external ---
@@ -14,7 +13,10 @@ use reqwest::header::{COOKIE, SET_COOKIE, HeaderMap};
 use serde_json::{Value, from_str};
 
 // --- custom ---
-use crate::util::init::{CONF, SIGN_IN_API};
+use crate::util::{
+    default_client_builder,
+    init::SIGN_IN_API,
+};
 use super::Account;
 
 #[derive(Debug)]
@@ -95,12 +97,7 @@ impl<'a> Account<'a> {
     }
 
     pub fn build_client(&self) -> Client {
-        let client_builder = Client::builder()
-            .danger_accept_invalid_certs(true)
-            .danger_accept_invalid_hostnames(true)
-            .default_headers(self.cookie.clone())
-            .gzip(true)
-            .timeout(Duration::from_secs(CONF.request_timeout));
+        let client_builder = default_client_builder().default_headers(self.cookie.clone());
 
         let proxy = self.ask_proxy();
         if proxy.is_empty() {
@@ -110,7 +107,10 @@ impl<'a> Account<'a> {
 //            println!("{}", self.proxies.unwrap().lock().unwrap().0.len());  // TODO Debug
 
             let proxy = format!("http://{}", proxy);
-            client_builder.proxy(Proxy::https(&proxy).unwrap()).build().unwrap()
+            client_builder
+                .proxy(Proxy::https(&proxy).unwrap())
+                .build()
+                .unwrap()
         }
     }
 
@@ -165,11 +165,7 @@ impl<'a> Account<'a> {
         payload.push(("sign".to_string(), sign));
 
         loop {
-            match Client::builder()
-                .danger_accept_invalid_certs(true)
-                .danger_accept_invalid_hostnames(true)
-                .gzip(true)
-                .timeout(Duration::from_secs(2))
+            match default_client_builder()
                 .build()
                 .unwrap()
                 .post(SIGN_IN_API)

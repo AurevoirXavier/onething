@@ -9,14 +9,18 @@ use std::{
 };
 
 // --- external ---
+use reqwest::header::HeaderMap;
 use serde_json::from_reader;
 
 // --- custom ---
 use super::proxy::Proxies;
 
-pub const ORDER_LIST_API: &'static str = "https://api-mall.onethingpcs.com/orders/list";
+pub const GET_BALANCE_API: &'static str = "https://walletapi.onethingpcs.com/getBalance";
+pub const GET_TRANSACTION_COUNT_API: &'static str = "https://walletapi.onethingpcs.com/getTransactionCount";
+pub const ORDER_LIST_API: &'static str = "https://api-mall.onethingpcs.com/order/list";
+pub const RAW_TRANSACTION_API: &'static str = "https://walletapi.onethingpcs.com/sendRawTransaction";
 pub const SIGN_IN_API: &'static str = "https://api-accw.onethingpcs.com/user/login";
-pub const SUBMIT_ORDER_API: &'static str = "https://api-mall.onethingpcs.com/orders/submitorder";
+pub const SUBMIT_ORDER_API: &'static str = "https://api-mall.onethingpcs.com/order/submitorder";
 
 lazy_static! {
     pub static ref ACCOUNTS: Vec<String> = {
@@ -55,6 +59,7 @@ pub struct Conf {
     pub kinds: Vec<u8>,
     pub proxy_pool_api: String,
     pub request_timeout: u64,
+    pub transaction_proxy: String,
 }
 
 fn load_conf() -> Conf {
