@@ -3,7 +3,8 @@
 target
 *.iml
 *.lock
-cookie
-order
+cookies
 accounts.txt
 detectors.txt
+wallets
+new-wallets
