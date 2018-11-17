@@ -18,7 +18,7 @@ use super::proxy::Proxies;
 pub const GET_BALANCE_API: &'static str = "https://walletapi.onethingpcs.com/getBalance";
 pub const GET_TRANSACTION_COUNT_API: &'static str = "https://walletapi.onethingpcs.com/getTransactionCount";
 pub const ORDER_LIST_API: &'static str = "https://api-mall.onethingpcs.com/order/list";
-pub const RAW_TRANSACTION_API: &'static str = "https://walletapi.onethingpcs.com/sendRawTransaction";
+pub const SEND_RAW_TRANSACTION_API: &'static str = "https://walletapi.onethingpcs.com/sendRawTransaction";
 pub const SIGN_IN_API: &'static str = "https://api-accw.onethingpcs.com/user/login";
 pub const SUBMIT_ORDER_API: &'static str = "https://api-mall.onethingpcs.com/order/submitorder";
 
@@ -43,10 +43,18 @@ lazy_static! {
 
     pub static ref PROXIES: Arc<Mutex<Proxies>> = Arc::new(Mutex::new(Proxies::new()));
 
+    pub static ref TRANSACTION_HEADERS: HeaderMap = {
+        let mut headers = HeaderMap::new();
+        headers.insert("Nc", "IN".parse().unwrap());
+
+        headers
+    };
+
     pub static ref WALLETS: Arc<Mutex<Cycle<IntoIter<PathBuf>>>> = Arc::new(Mutex::new(
         read_dir("wallets")
             .unwrap()
             .map(|d| d.unwrap().path())
+            .filter(|path| path.file_name().unwrap().to_str().unwrap().starts_with("0x"))
             .collect::<Vec<PathBuf>>()
             .into_iter()
             .cycle()

@@ -7,7 +7,6 @@ edition = "2018"
 [dependencies]
 chrono = "*"
 emerald-core = "*"
-hex = "*"
 lazy_static = "*"
 md5 = "*"
 rand = "*"

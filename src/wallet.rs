@@ -6,35 +6,15 @@ use std::{
 };
 
 // --- external ---
-use emerald_core::{
-    Address,
-    Transaction,
-    ToHex,
-    align_bytes,
-    to_arr,
-    keystore::{KdfDepthLevel, KeyFile},
-};
-use hex::FromHex;
-use reqwest::{
-    Proxy,
-    header::{
-        CONTENT_TYPE,
-        HeaderMap,
-    },
-};
+use emerald_core::keystore::{KdfDepthLevel, KeyFile};
+use reqwest::Proxy;
 use serde_json::{Value, from_str};
 
 // --- custom ---
 use crate::util::{
     default_client_builder,
     hex_to_u64,
-    init::{
-        CONF,
-        GET_BALANCE_API,
-        GET_TRANSACTION_COUNT_API,
-        RAW_TRANSACTION_API,
-        WALLETS,
-    },
+    init::{CONF, GET_BALANCE_API, GET_TRANSACTION_COUNT_API, SEND_RAW_TRANSACTION_API, TRANSACTION_HEADERS, WALLETS},
 };
 
 fn get_info(url: &str, address: &str) -> u64 {
@@ -50,7 +30,7 @@ fn get_info(url: &str, address: &str) -> u64 {
                 "id": 1
              })).send() {
             let data = resp.text().unwrap();
-            println!("{}", data);  // TODO Debug
+//            println!("{}", data);  // TODO Debug
             if data.contains('<') { continue; }
 
             let order: Value = from_str(&data).unwrap();
@@ -90,17 +70,13 @@ pub fn gen_wallet() {
     }
 }
 
-fn to_20bytes(hex: &str) -> [u8; 20] { to_arr(align_bytes(&Vec::from_hex(&hex).unwrap(), 20).as_slice()) }
-
-fn to_32bytes(hex: &str) -> [u8; 32] { to_arr(align_bytes(&Vec::from_hex(&hex).unwrap(), 32).as_slice()) }
-
-fn sign_transaction(gas_price: &str, gas_limit: u64, to: &str, value: &str, data: Vec<u8>) -> Vec<u8> {
+fn sign_transaction(gas_price: &str, gas_limit: &str, to: &str, value: &str, data: Vec<u8>) -> Vec<u8> {
     let wallet = WALLETS.lock()
         .unwrap()
         .next()
         .unwrap();
 
-    let key_file = {
+    let private_key = {
         let mut key_file = String::new();
         File::open(wallet.clone())
             .unwrap()
@@ -113,35 +89,27 @@ fn sign_transaction(gas_price: &str, gas_limit: u64, to: &str, value: &str, data
             .unwrap()
     };
 
-    Transaction {
-        nonce: get_info(GET_TRANSACTION_COUNT_API, wallet.file_name().unwrap().to_str().unwrap()),
-        gas_price: to_32bytes(gas_price),
-        gas_limit,
-        to: Some(Address(to_20bytes(to))),
-        value: to_32bytes(value),
-        data,
-    }.to_signed_raw(key_file, 0).unwrap()
+    unimplemented!()
 }
 
 pub fn transact(signed_transaction: Vec<u8>) {
-    let mut headers = HeaderMap::new();
-    headers.insert(CONTENT_TYPE, "application/json".parse().unwrap());
-    headers.insert("Nc", "IN".parse().unwrap());
-
     loop {
         match default_client_builder()
-            .default_headers(headers.clone())
+            .default_headers(TRANSACTION_HEADERS.clone())
             .proxy(Proxy::https(&CONF.transaction_proxy).unwrap())
             .build()
             .unwrap()
-            .post(RAW_TRANSACTION_API)
+            .post(SEND_RAW_TRANSACTION_API)
             .json(&json!({
                 "jsonrpc": "2.0",
                 "method": "eth_sendRawTransaction",
-                "params": [signed_transaction.to_hex()],
+                "params": [signed_transaction],
                 "id": 1
             })).send() {
-            Ok(mut resp) => println!("{}", resp.text().unwrap()),
+            Ok(mut resp) => {
+                println!("{}", resp.text().unwrap());
+                break;
+            }
             Err(e) => {
                 println!("{:?}", e);
                 continue;
@@ -154,14 +122,6 @@ pub fn settle_accounts() {}
 
 #[test]
 fn test() {
-    let signed = sign_transaction(
-        "174876e800",
-        0x186a0,
-        "dce69e7f233b8876019093e0c8abf75e33dd8603",
-        "100000000000000000",
-        vec![],
-    );
-    transact(signed)
 //    for key_file_path in read_dir("wallets").unwrap() {
 //        let path = key_file_path.unwrap().path();
 //        if !path.file_name().unwrap().to_str().unwrap().starts_with("0x") { continue; }

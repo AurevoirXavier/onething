@@ -1,6 +1,5 @@
 extern crate chrono;
 extern crate emerald_core;
-extern crate hex;
 #[macro_use]
 extern crate lazy_static;
 extern crate md5;
