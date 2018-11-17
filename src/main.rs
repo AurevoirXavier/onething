@@ -1,4 +1,5 @@
 extern crate chrono;
+extern crate cpython;
 extern crate emerald_core;
 #[macro_use]
 extern crate lazy_static;

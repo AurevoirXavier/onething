@@ -20,5 +20,3 @@ pub fn default_client_builder() -> ClientBuilder {
         .gzip(true)
         .timeout(Duration::from_secs(CONF.request_timeout))
 }
-
-pub fn hex_to_u64(hex: &str) -> u64 { u64::from_str_radix(hex, 16).unwrap() }

@@ -1,7 +1,6 @@
 // --- std ---
 use std::{
     env,
-    io::Write,
     sync::{Arc, Mutex},
     thread,
 };
@@ -65,7 +64,7 @@ pub fn dispatch_task(with_proxy: bool) {
             .with_kinds(&CONF.kinds)
             .detect(),
         "--export" => dispatch_account(None, with_proxy),
-//        "--transact" => settle_accounts(),
+        "--transact" => settle_accounts(),  // TODO
         "--gen-wallet" => gen_wallet(),
         _ => panic!("Unexpected args.")
     }

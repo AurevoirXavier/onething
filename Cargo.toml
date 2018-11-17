@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 chrono = "*"
+cpython = "*"
 emerald-core = "*"
 lazy_static = "*"
 md5 = "*"

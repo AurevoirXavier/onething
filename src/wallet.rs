@@ -6,6 +6,7 @@ use std::{
 };
 
 // --- external ---
+use cpython::{ObjectProtocol, Python, PyDict};
 use emerald_core::{
     ToHex,
     keystore::{KdfDepthLevel, KeyFile}
@@ -16,7 +17,6 @@ use serde_json::{Value, from_str};
 // --- custom ---
 use crate::util::{
     default_client_builder,
-    hex_to_u64,
     init::{CONF, GET_BALANCE_API, GET_TRANSACTION_COUNT_API, SEND_RAW_TRANSACTION_API, TRANSACTION_HEADERS, WALLETS},
 };
 
@@ -73,12 +73,20 @@ pub fn gen_wallet() {
     }
 }
 
-pub fn sign_transaction<'a>(gas_limit: &str, to: &str, value: &str, data: &str) -> &'a str {
-    let gas_price = "0x174876e800";
+pub fn sign_transaction<'a>(to: &str, value: &str, gas_limit: &str, data: &str) -> &'a str {
     let wallet = WALLETS.lock()
         .unwrap()
         .next()
         .unwrap();
+
+    let from = wallet.file_name()
+        .unwrap()
+        .to_str()
+        .unwrap();
+
+    let balance = get_info(GET_BALANCE_API, from);
+    let nonce = get_info(GET_TRANSACTION_COUNT_API, from);
+    let value = value.as_bytes().to_hex();
 
     let private_key = {
         let mut key_file = String::new();
@@ -94,8 +102,38 @@ pub fn sign_transaction<'a>(gas_limit: &str, to: &str, value: &str, data: &str) 
             .to_hex()
     };
 
-    println!("{}", private_key);
+    let gil = Python::acquire_gil();
+    let py = gil.python();
+    let web3 = py.import("web3").unwrap();
 
+    let transaction = {
+        let transaction = PyDict::new(py);
+        transaction.set_item(py, "gasPrice", "0x174876e800").unwrap();
+        transaction.set_item(py, "nonce", nonce).unwrap();
+        transaction.set_item(py, "data", data).unwrap();
+
+        let web3 = web3.get(py, "Web3").unwrap();
+        let from = web3.call_method(py, "toChecksumAddress", (from, ), None).unwrap();
+        let to = web3.call_method(py, "toChecksumAddress", (to, ), None).unwrap();
+
+        transaction.set_item(py, "to", to).unwrap();
+        transaction.set_item(py, "value", value).unwrap();
+
+        if gas_limit.is_empty() {
+            transaction.set_item(py, "gas", "0x186a0").unwrap();
+        } else {
+            transaction.set_item(py, "gas", gas_limit).unwrap();
+        }
+
+        transaction
+    };
+
+    println!("{:?}", transaction.items(py));
+
+    let account = web3.get(py, "Account").unwrap();
+    let signed_transaction = account.call_method(py, "signTransaction", (transaction, private_key), None).unwrap();
+
+    println!("{:?}", signed_transaction);
     unimplemented!()
 }
 
@@ -129,6 +167,10 @@ pub fn settle_accounts() {}
 
 #[test]
 fn test() {
+    println!("{:x}", 100000000000000000000000u64);
+//    sign_transaction("0xdce69e7f233b8876019093e0c8abf75e33dd8603", "100000000000000000", "", "");
+}
+
 //    for key_file_path in read_dir("wallets").unwrap() {
 //        let path = key_file_path.unwrap().path();
 //        if !path.file_name().unwrap().to_str().unwrap().starts_with("0x") { continue; }
@@ -143,4 +185,3 @@ fn test() {
 //
 //        println!("{:?}", key_file.decrypt_key("123456789").unwrap().to_address().unwrap());
 //    }
-}
