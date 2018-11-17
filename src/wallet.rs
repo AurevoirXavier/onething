@@ -6,7 +6,7 @@ use std::{
 };
 
 // --- external ---
-use cpython::{ObjectProtocol, Python, PyDict};
+use cpython::{NoArgs, ObjectProtocol, Python, PyDict};
 use emerald_core::{
     ToHex,
     keystore::{KdfDepthLevel, KeyFile}
@@ -73,7 +73,7 @@ pub fn gen_wallet() {
     }
 }
 
-pub fn sign_transaction<'a>(to: &str, value: &str, gas_limit: &str, data: &str) -> &'a str {
+pub fn sign_transaction(to: &str, value: &str, gas_limit: &str, data: &str) -> String {
     let wallet = WALLETS.lock()
         .unwrap()
         .next()
@@ -86,7 +86,7 @@ pub fn sign_transaction<'a>(to: &str, value: &str, gas_limit: &str, data: &str) 
 
     let balance = get_info(GET_BALANCE_API, from);
     let nonce = get_info(GET_TRANSACTION_COUNT_API, from);
-    let value = value.as_bytes().to_hex();
+    let value = format!("{:#x}", value.parse::<u128>().unwrap());
 
     let private_key = {
         let mut key_file = String::new();
@@ -128,13 +128,18 @@ pub fn sign_transaction<'a>(to: &str, value: &str, gas_limit: &str, data: &str) 
         transaction
     };
 
-    println!("{:?}", transaction.items(py));
+//    println!("{:?}", transaction.items(py));  // TODO Debug
 
     let account = web3.get(py, "Account").unwrap();
     let signed_transaction = account.call_method(py, "signTransaction", (transaction, private_key), None).unwrap();
 
-    println!("{:?}", signed_transaction);
-    unimplemented!()
+//    println!("{:?}", signed_transaction);  // TODO Debug
+    signed_transaction.getattr(py, "rawTransaction")
+        .unwrap()
+        .call_method(py, "hex", NoArgs,None)
+        .unwrap()
+        .extract(py)
+        .unwrap()
 }
 
 pub fn transact(signed_transaction: &str) {
@@ -167,8 +172,7 @@ pub fn settle_accounts() {}
 
 #[test]
 fn test() {
-    println!("{:x}", 100000000000000000000000u64);
-//    sign_transaction("0xdce69e7f233b8876019093e0c8abf75e33dd8603", "100000000000000000", "", "");
+    sign_transaction("0xdce69e7f233b8876019093e0c8abf75e33dd8603", "100000000000000000", "", "");
 }
 
 //    for key_file_path in read_dir("wallets").unwrap() {
