@@ -11,7 +11,7 @@ use serde_json::{Value, from_str};
 // --- custom ---
 use crate::{
     util::init::{ORDERS, SUBMIT_ORDER_API},
-    wallet::{sign_transaction, transact},
+    wallet::sign_transaction_with_random_wallet,
 };
 use super::Account;
 
@@ -57,7 +57,7 @@ fn save_and_pay_order(account: &str, data: &Value) {
         writeln!(orders, "{}-{}-{}-{}-{}", account, to, value, gas_limit, data).unwrap();
     }
 
-    transact(&sign_transaction(&gas_limit, to, value, data));
+    sign_transaction_with_random_wallet(&gas_limit, to, value, data);
 }
 
 impl<'a> Account<'a> {

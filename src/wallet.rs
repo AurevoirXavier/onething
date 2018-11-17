@@ -1,9 +1,12 @@
 // --- std ---
 use std::{
     u128,
-    fs::{File, create_dir},
+    collections::HashSet,
+    fs::{File, create_dir, read_dir},
     io::{Read, Write, stdin, stdout},
-    path::Path,
+    iter::Cycle,
+    path::{Path, PathBuf},
+    vec::IntoIter,
 };
 
 // --- external ---
@@ -20,6 +23,40 @@ use crate::util::{
     default_client_builder,
     init::{CONF, GET_BALANCE_API, GET_TRANSACTION_COUNT_API, SEND_RAW_TRANSACTION_API, TRANSACTION_HEADERS, WALLETS},
 };
+
+pub struct Wallets {
+    all: HashSet<PathBuf>,
+    available: Cycle<IntoIter<PathBuf>>,
+}
+
+impl Wallets {
+    pub fn new() -> Wallets {
+        let all: Vec<PathBuf> = read_dir("wallets")
+            .unwrap()
+            .map(|d| d.unwrap().path())
+            .filter(|path| path.file_name().unwrap().to_str().unwrap().starts_with("0x"))
+            .collect();
+
+        Wallets {
+            all: all.iter().cloned().collect(),
+            available: all.into_iter().cycle(),
+        }
+    }
+
+    pub fn update(&mut self, unavailable: &PathBuf) {
+        if self.all.len() == 1 { panic!("All wallets are unavailable."); }
+
+        self.all.remove(unavailable);
+        self.available = self.all
+            .iter()
+            .cloned()
+            .collect::<Vec<PathBuf>>()
+            .into_iter()
+            .cycle();
+    }
+
+    pub fn next(&mut self) -> PathBuf { self.available.next().unwrap() }
+}
 
 fn get_info(url: &str, address: &str) -> String {
     loop {
@@ -74,35 +111,14 @@ pub fn gen_wallet() {
     }
 }
 
-pub fn sign_transaction(to: &str, value: &str, gas_limit: &str, data: &str) -> String {
+pub fn sign_transaction(wallet: PathBuf, to: &str, value: &str, gas_limit: &str, data: &str) -> String {
     let gas_limit = if gas_limit.is_empty() { "0x186a0" } else { gas_limit };
-
-    let mut wallet;
-    let mut from;
-    loop {
-        wallet = WALLETS.lock()
-            .unwrap()
-            .next()
-            .unwrap();
-
-        from = wallet.file_name()
-            .unwrap()
-            .to_str()
-            .unwrap();
-
-        let balance = u128::from_str_radix(&get_info(GET_BALANCE_API, from)[2..], 16).unwrap();
-        let gas_limit = u128::from_str_radix(&gas_limit[2..], 16).unwrap();
-        let gas_price = 0x174876e800u128;
-
-        if balance > gas_limit * gas_price { break; } else { continue; }
-    }
-
-    let nonce = get_info(GET_TRANSACTION_COUNT_API, from);
+    let nonce = get_info(GET_TRANSACTION_COUNT_API, wallet.file_name().unwrap().to_str().unwrap());
     let value = format!("{:#x}", value.parse::<u128>().unwrap());
 
     let private_key = {
         let mut key_file = String::new();
-        File::open(wallet.clone())
+        File::open(wallet)
             .unwrap()
             .read_to_string(&mut key_file)
             .unwrap();
@@ -149,7 +165,7 @@ pub fn sign_transaction(to: &str, value: &str, gas_limit: &str, data: &str) -> S
         .unwrap()
 }
 
-pub fn transact(signed_transaction: &str) {
+pub fn send_transaction(signed_transaction: &str) {
     loop {
         match default_client_builder()
             .default_headers(TRANSACTION_HEADERS.clone())
@@ -176,15 +192,39 @@ pub fn transact(signed_transaction: &str) {
     }
 }
 
+pub fn sign_transaction_with_random_wallet(to: &str, value: &str, gas_limit: &str, data: &str) -> String {
+    let mut wallet;
+    let mut from;
+    loop {
+        let mut guard = WALLETS.lock().unwrap();
+        wallet = guard.next();
+
+        from = wallet.file_name()
+            .unwrap()
+            .to_str()
+            .unwrap();
+
+        let balance = u128::from_str_radix(&get_info(GET_BALANCE_API, from)[2..], 16).unwrap();
+        let gas_limit = u128::from_str_radix(&gas_limit[2..], 16).unwrap();
+        let gas_price = 0x174876e800u128;
+
+        if balance > gas_limit * gas_price { break; } else {
+            guard.update(&wallet);
+            continue;
+        }
+    }
+
+    sign_transaction(wallet, to, value, gas_limit, data)
+}
+
 pub fn settle_accounts() {}
 
 #[test]
 fn test() {
-    transact(
-        &sign_transaction(
-            "0xdce69e7f233b8876019093e0c8abf75e33dd8603",
-            "100000000000000000",
-            "",
-            "")
+    sign_transaction_with_random_wallet(
+        "0xdce69e7f233b8876019093e0c8abf75e33dd8603",
+        "100000000000000000",
+        "",
+        "",
     );
 }

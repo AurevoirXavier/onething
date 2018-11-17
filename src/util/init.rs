@@ -1,9 +1,7 @@
 // --- std ---
 use std::{
-    fs::{File, OpenOptions, read_dir},
+    fs::{File, OpenOptions},
     io::prelude::*,
-    iter::Cycle,
-    path::PathBuf,
     sync::{Arc, Mutex},
     vec::IntoIter,
 };
@@ -13,6 +11,7 @@ use reqwest::header::HeaderMap;
 use serde_json::from_reader;
 
 // --- custom ---
+use crate::wallet::Wallets;
 use super::proxy::Proxies;
 
 pub const GET_BALANCE_API: &'static str = "https://walletapi.onethingpcs.com/getBalance";
@@ -61,15 +60,7 @@ lazy_static! {
         headers
     };
 
-    pub static ref WALLETS: Arc<Mutex<Cycle<IntoIter<PathBuf>>>> = Arc::new(Mutex::new(
-        read_dir("wallets")
-            .unwrap()
-            .map(|d| d.unwrap().path())
-            .filter(|path| path.file_name().unwrap().to_str().unwrap().starts_with("0x"))
-            .collect::<Vec<PathBuf>>()
-            .into_iter()
-            .cycle()
-    ));
+    pub static ref WALLETS: Arc<Mutex<Wallets>> = Arc::new(Mutex::new(Wallets::new()));
 }
 
 #[derive(Deserialize)]

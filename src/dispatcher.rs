@@ -1,6 +1,7 @@
 // --- std ---
 use std::{
     env,
+    path::PathBuf,
     sync::{Arc, Mutex},
     thread,
 };
@@ -13,7 +14,7 @@ use crate::{
         init::{ACCOUNTS, CONF, ORDERS, PROXIES},
         proxy::Proxies,
     },
-    wallet::{gen_wallet, settle_accounts},
+    wallet::{gen_wallet, send_transaction, settle_accounts, sign_transaction},
 };
 
 fn execute_task(t_id: u8, accounts: &[String], proxy: Option<&Arc<Mutex<Proxies>>>, kind: Option<u8>) {
@@ -58,13 +59,15 @@ pub fn dispatch_account(kind: Option<u8>, with_proxy: bool) {
 }
 
 pub fn dispatch_task(with_proxy: bool) {
-    match env::args().collect::<Vec<String>>()[1].as_str() {
+    let args: Vec<String> = env::args().collect();
+    match args[1].as_str() {
         "--redeem" => Detector::new()
             .with_proxy()
             .with_kinds(&CONF.kinds)
             .detect(),
         "--export" => dispatch_account(None, with_proxy),
-        "--transact" => settle_accounts(),  // TODO
+        "--settle" => settle_accounts(),  // TODO
+        "--transact" => send_transaction(&sign_transaction(PathBuf::from(&args[2]), &args[3], &args[4], &args[5], "")),
         "--gen-wallet" => gen_wallet(),
         _ => panic!("Unexpected args.")
     }
