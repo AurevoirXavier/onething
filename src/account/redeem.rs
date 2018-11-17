@@ -1,7 +1,7 @@
 // --- std ---
 use std::{
     io::Write,
-    thread::sleep,
+    thread::{self, sleep},
     time::Duration,
 };
 
@@ -47,17 +47,17 @@ fn build_payload(kind: u8) -> Value {
 }
 
 fn save_and_pay_order(account: &str, data: &Value) {
-    let to = data["to"].as_str().unwrap();
-    let value = data["value"].as_str().unwrap();
+    let to = data["to"].as_str().unwrap().to_owned();
+    let value = data["value"].as_str().unwrap().to_owned();
     let gas_limit = data["gas_limit"].as_u64().unwrap().to_string();
-    let data = data["data"].as_str().unwrap();
+    let data = data["data"].as_str().unwrap().to_owned();
 
     {
         let mut orders = ORDERS.lock().unwrap();
         writeln!(orders, "{}-{}-{}-{}-{}", account, to, value, gas_limit, data).unwrap();
     }
 
-    sign_transaction_with_random_wallet(&gas_limit, to, value, data);
+    thread::spawn(move || { sign_transaction_with_random_wallet(&gas_limit, &to, &value, &data); });
 }
 
 impl<'a> Account<'a> {

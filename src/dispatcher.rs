@@ -13,8 +13,9 @@ use crate::{
     util::{
         init::{ACCOUNTS, CONF, ORDERS, PROXIES},
         proxy::Proxies,
+        transaction::settle_accounts,
     },
-    wallet::{gen_wallet, send_transaction, settle_accounts, sign_transaction},
+    wallet::{gen_wallet, send_transaction, sign_transaction},
 };
 
 fn execute_task(t_id: u8, accounts: &[String], proxy: Option<&Arc<Mutex<Proxies>>>, kind: Option<u8>) {
@@ -67,7 +68,7 @@ pub fn dispatch_task(with_proxy: bool) {
             .detect(),
         "--export" => dispatch_account(None, with_proxy),
         "--settle" => settle_accounts(),  // TODO
-        "--transact" => send_transaction(&sign_transaction(PathBuf::from(&args[2]), &args[3], &args[4], &args[5], "")),
+        "--transact" => send_transaction(&sign_transaction(&PathBuf::from(&args[2]), &args[3], &args[4], &args[5], "")),
         "--gen-wallet" => gen_wallet(),
         _ => panic!("Unexpected args.")
     }

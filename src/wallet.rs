@@ -55,7 +55,10 @@ impl Wallets {
             .cycle();
     }
 
-    pub fn next(&mut self) -> PathBuf { self.available.next().unwrap() }
+    pub fn next(&mut self) -> PathBuf {
+        if self.all.len() == 0 { panic!("All wallets are unavailable."); }
+        self.available.next().unwrap()
+    }
 }
 
 fn get_info(url: &str, address: &str) -> String {
@@ -98,6 +101,7 @@ pub fn gen_wallet() {
         let dir = Path::new("new-wallets");
         if !dir.exists() { create_dir(dir).unwrap(); }
     }
+
     for i in 1..=amount.trim().parse::<u64>().unwrap() {
         let key_file = KeyFile::new(
             &password,
@@ -111,7 +115,7 @@ pub fn gen_wallet() {
     }
 }
 
-pub fn sign_transaction(wallet: PathBuf, to: &str, value: &str, gas_limit: &str, data: &str) -> String {
+pub fn sign_transaction(wallet: &PathBuf, to: &str, value: &str, gas_limit: &str, data: &str) -> String {
     let gas_limit = if gas_limit.is_empty() { "0x186a0" } else { gas_limit };
     let nonce = get_info(GET_TRANSACTION_COUNT_API, wallet.file_name().unwrap().to_str().unwrap());
     let value = format!("{:#x}", value.parse::<u128>().unwrap());
@@ -193,6 +197,7 @@ pub fn send_transaction(signed_transaction: &str) {
 }
 
 pub fn sign_transaction_with_random_wallet(to: &str, value: &str, gas_limit: &str, data: &str) -> String {
+    let gas_limit = if gas_limit.is_empty() { "0x186a0" } else { gas_limit };
     let mut wallet;
     let mut from;
     loop {
@@ -214,10 +219,8 @@ pub fn sign_transaction_with_random_wallet(to: &str, value: &str, gas_limit: &st
         }
     }
 
-    sign_transaction(wallet, to, value, gas_limit, data)
+    sign_transaction(&wallet, to, value, gas_limit, data)
 }
-
-pub fn settle_accounts() {}
 
 #[test]
 fn test() {
