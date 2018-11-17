@@ -2,10 +2,7 @@ pub mod init;
 pub mod proxy;
 
 // --- std ---
-use std::{
-    time::Duration,
-    u64,
-};
+use std::time::Duration;
 
 // --- external ---
 use reqwest::{Client, ClientBuilder};

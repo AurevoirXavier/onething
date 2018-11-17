@@ -121,7 +121,6 @@ impl<'a> Account<'a> {
         }
 
         let path = format!("cookies/{}", self.username);
-        let path = Path::new(&path);
         let mut f = File::create(path).unwrap();
 
         f.write_all(cookie).unwrap();

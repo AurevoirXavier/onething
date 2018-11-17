@@ -1,6 +1,7 @@
 // --- std ---
 use std::{
-    fs::{File, create_dir, read_dir},
+    u128,
+    fs::{File, create_dir},
     io::{Read, Write, stdin, stdout},
     path::Path,
 };
@@ -9,7 +10,7 @@ use std::{
 use cpython::{NoArgs, ObjectProtocol, Python, PyDict};
 use emerald_core::{
     ToHex,
-    keystore::{KdfDepthLevel, KeyFile}
+    keystore::{KdfDepthLevel, KeyFile},
 };
 use reqwest::Proxy;
 use serde_json::{Value, from_str};
@@ -67,24 +68,35 @@ pub fn gen_wallet() {
             None,
             None,
         ).unwrap();
-        key_file.flush(Path::new("new-wallets"), Some(&key_file.address.to_string())).unwrap();
+        key_file.flush("new-wallets", Some(&key_file.address.to_string())).unwrap();
 
         println!("No.{} wallet was generated.", i);
     }
 }
 
 pub fn sign_transaction(to: &str, value: &str, gas_limit: &str, data: &str) -> String {
-    let wallet = WALLETS.lock()
-        .unwrap()
-        .next()
-        .unwrap();
+    let gas_limit = if gas_limit.is_empty() { "0x186a0" } else { gas_limit };
 
-    let from = wallet.file_name()
-        .unwrap()
-        .to_str()
-        .unwrap();
+    let mut wallet;
+    let mut from;
+    loop {
+        wallet = WALLETS.lock()
+            .unwrap()
+            .next()
+            .unwrap();
 
-    let balance = get_info(GET_BALANCE_API, from);
+        from = wallet.file_name()
+            .unwrap()
+            .to_str()
+            .unwrap();
+
+        let balance = u128::from_str_radix(&get_info(GET_BALANCE_API, from)[2..], 16).unwrap();
+        let gas_limit = u128::from_str_radix(&gas_limit[2..], 16).unwrap();
+        let gas_price = 0x174876e800u128;
+
+        if balance > gas_limit * gas_price { break; } else { continue; }
+    }
+
     let nonce = get_info(GET_TRANSACTION_COUNT_API, from);
     let value = format!("{:#x}", value.parse::<u128>().unwrap());
 
@@ -108,22 +120,16 @@ pub fn sign_transaction(to: &str, value: &str, gas_limit: &str, data: &str) -> S
 
     let transaction = {
         let transaction = PyDict::new(py);
+        transaction.set_item(py, "gas", gas_limit).unwrap();
         transaction.set_item(py, "gasPrice", "0x174876e800").unwrap();
         transaction.set_item(py, "nonce", nonce).unwrap();
         transaction.set_item(py, "data", data).unwrap();
 
         let web3 = web3.get(py, "Web3").unwrap();
-        let from = web3.call_method(py, "toChecksumAddress", (from, ), None).unwrap();
         let to = web3.call_method(py, "toChecksumAddress", (to, ), None).unwrap();
 
         transaction.set_item(py, "to", to).unwrap();
         transaction.set_item(py, "value", value).unwrap();
-
-        if gas_limit.is_empty() {
-            transaction.set_item(py, "gas", "0x186a0").unwrap();
-        } else {
-            transaction.set_item(py, "gas", gas_limit).unwrap();
-        }
 
         transaction
     };
@@ -134,9 +140,10 @@ pub fn sign_transaction(to: &str, value: &str, gas_limit: &str, data: &str) -> S
     let signed_transaction = account.call_method(py, "signTransaction", (transaction, private_key), None).unwrap();
 
 //    println!("{:?}", signed_transaction);  // TODO Debug
+
     signed_transaction.getattr(py, "rawTransaction")
         .unwrap()
-        .call_method(py, "hex", NoArgs,None)
+        .call_method(py, "hex", NoArgs, None)
         .unwrap()
         .extract(py)
         .unwrap()
@@ -157,8 +164,9 @@ pub fn transact(signed_transaction: &str) {
                 "id": 1
             })).send() {
             Ok(mut resp) => {
-                println!("{}", resp.text().unwrap());
-                break;
+//                println!("{}", resp.text().unwrap());  // TODO Debug
+                let data = resp.text().unwrap();
+                if data.contains('<') { continue; } else if data.contains("result") { break; } else { println!("{}", data); }
             }
             Err(e) => {
                 println!("{:?}", e);
@@ -172,20 +180,11 @@ pub fn settle_accounts() {}
 
 #[test]
 fn test() {
-    sign_transaction("0xdce69e7f233b8876019093e0c8abf75e33dd8603", "100000000000000000", "", "");
+    transact(
+        &sign_transaction(
+            "0xdce69e7f233b8876019093e0c8abf75e33dd8603",
+            "100000000000000000",
+            "",
+            "")
+    );
 }
-
-//    for key_file_path in read_dir("wallets").unwrap() {
-//        let path = key_file_path.unwrap().path();
-//        if !path.file_name().unwrap().to_str().unwrap().starts_with("0x") { continue; }
-//
-//        let key_file = {
-//            let mut data = String::new();
-//            let mut key_file = File::open(path).unwrap();
-//            key_file.read_to_string(&mut data);
-//
-//            KeyFile::decode(data).unwrap()
-//        };
-//
-//        println!("{:?}", key_file.decrypt_key("123456789").unwrap().to_address().unwrap());
-//    }
