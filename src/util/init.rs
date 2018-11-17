@@ -1,6 +1,6 @@
 // --- std ---
 use std::{
-    fs::{File, read_dir},
+    fs::{File, OpenOptions, read_dir},
     io::prelude::*,
     iter::Cycle,
     path::{Path, PathBuf},
@@ -39,7 +39,12 @@ lazy_static! {
         Arc::new(Mutex::new(detectors.lines().map(|line| line.to_owned()).collect::<Vec<String>>().into_iter()))
     };
 
-    pub static ref ORDERS: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(vec![]));
+    pub static ref ORDERS: Arc<Mutex<File>> = {
+        Arc::new(Mutex::new(OpenOptions::new()
+            .append(true)
+            .open("orders")
+            .unwrap()))
+    };
 
     pub static ref PROXIES: Arc<Mutex<Proxies>> = Arc::new(Mutex::new(Proxies::new()));
 

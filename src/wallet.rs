@@ -6,7 +6,10 @@ use std::{
 };
 
 // --- external ---
-use emerald_core::keystore::{KdfDepthLevel, KeyFile};
+use emerald_core::{
+    ToHex,
+    keystore::{KdfDepthLevel, KeyFile}
+};
 use reqwest::Proxy;
 use serde_json::{Value, from_str};
 
@@ -87,7 +90,10 @@ fn sign_transaction(gas_price: &str, gas_limit: &str, to: &str, value: &str, dat
             .unwrap()
             .decrypt_key("123456789")
             .unwrap()
+            .to_hex()
     };
+
+    println!("{}", private_key);
 
     unimplemented!()
 }

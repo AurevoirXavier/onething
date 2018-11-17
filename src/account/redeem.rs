@@ -1,5 +1,6 @@
 // --- std ---
 use std::{
+    io::Write,
     thread::sleep,
     time::Duration,
 };
@@ -45,17 +46,18 @@ fn build_payload(kind: u8) -> Value {
     });
 }
 
-fn save_order(account: &str, data: &Value) {
-    let mut orders = ORDERS.lock().unwrap();
+fn save_and_pay_order(account: &str, data: &Value) {
+    let to = data["to"].as_str().unwrap();
+    let value = data["value"].as_str().unwrap();
+    let gas_limit = data["gas_limit"].as_u64().unwrap().to_string();
+    let data = data["data"].as_str().unwrap();
 
-    orders.push(format!(
-        "{}-{}-{}-{}-{}",
-        account,
-        data["to"].as_str().unwrap(),
-        data["data"].as_str().unwrap(),
-        data["value"].as_str().unwrap(),
-        data["gas_limit"].as_u64().unwrap()
-    ));
+    {
+        let mut orders = ORDERS.lock().unwrap();
+        writeln!(orders, "{}-{}-{}-{}-{}", account, to, value, gas_limit, data).unwrap();
+    }
+
+    transact();
 }
 
 impl<'a> Account<'a> {
@@ -102,7 +104,7 @@ impl<'a> Account<'a> {
                     }
                     // iRet: 0, sMsg: 成功
                     Some(0) => {
-                        save_order(&self.username, &order["data"]);
+                        save_and_pay_order(&self.username, &order["data"]);
                         return 0;
                     }
                     // iRet: 10090, sMsg: 您购买的产品已售空

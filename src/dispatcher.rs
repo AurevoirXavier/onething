@@ -1,15 +1,10 @@
 // --- std ---
 use std::{
     env,
-    fs::{File, create_dir},
     io::Write,
-    path::Path,
     sync::{Arc, Mutex},
     thread,
 };
-
-// --- external ---
-use uuid::Uuid;
 
 // --- custom ---
 use crate::{
@@ -57,19 +52,10 @@ pub fn dispatch_account(kind: Option<u8>, with_proxy: bool) {
 
     for handle in handles { handle.join().unwrap(); }
 
-    {
-        let dir = Path::new("orders");
-        if !dir.exists() { create_dir(dir).unwrap(); }
-    }
-    let path = format!("orders/orders-{}.txt", Uuid::new_v4());
-    let mut f = File::create(Path::new(&path)).unwrap();
-    f.write_all(
-        ORDERS.lock()
-            .unwrap()
-            .join("\n")
-            .as_bytes()
-    ).unwrap();
-    f.sync_all().unwrap();
+    ORDERS.lock()
+        .unwrap()
+        .sync_all()
+        .unwrap();
 }
 
 pub fn dispatch_task(with_proxy: bool) {
