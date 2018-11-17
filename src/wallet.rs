@@ -20,7 +20,7 @@ use crate::util::{
     init::{CONF, GET_BALANCE_API, GET_TRANSACTION_COUNT_API, SEND_RAW_TRANSACTION_API, TRANSACTION_HEADERS, WALLETS},
 };
 
-fn get_info(url: &str, address: &str) -> u64 {
+fn get_info(url: &str, address: &str) -> String {
     loop {
         if let Ok(mut resp) = default_client_builder()
             .build()
@@ -38,7 +38,7 @@ fn get_info(url: &str, address: &str) -> u64 {
 
             let order: Value = from_str(&data).unwrap();
             if let Some(result) = order.get("result") {
-                return hex_to_u64(&result.as_str().unwrap()[2..]);
+                return result.as_str().unwrap().to_owned();
             } else { continue; }
         } else { continue; }
     }
@@ -73,7 +73,8 @@ pub fn gen_wallet() {
     }
 }
 
-fn sign_transaction(gas_price: &str, gas_limit: &str, to: &str, value: &str, data: Vec<u8>) -> Vec<u8> {
+pub fn sign_transaction<'a>(gas_limit: &str, to: &str, value: &str, data: &str) -> &'a str {
+    let gas_price = "0x174876e800";
     let wallet = WALLETS.lock()
         .unwrap()
         .next()
@@ -98,7 +99,7 @@ fn sign_transaction(gas_price: &str, gas_limit: &str, to: &str, value: &str, dat
     unimplemented!()
 }
 
-pub fn transact(signed_transaction: Vec<u8>) {
+pub fn transact(signed_transaction: &str) {
     loop {
         match default_client_builder()
             .default_headers(TRANSACTION_HEADERS.clone())
