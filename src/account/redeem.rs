@@ -11,7 +11,7 @@ use serde_json::{Value, from_str};
 // --- custom ---
 use crate::{
     util::init::{ORDERS, SUBMIT_ORDER_API},
-    wallet::sign_transaction_with_random_wallet,
+    wallet::transact::sign_transaction_with_random_wallet,
 };
 use super::Account;
 

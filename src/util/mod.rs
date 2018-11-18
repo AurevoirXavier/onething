@@ -1,6 +1,5 @@
 pub mod init;
 pub mod proxy;
-pub mod transaction;
 
 // --- std ---
 use std::time::Duration;

@@ -13,9 +13,13 @@ use crate::{
     util::{
         init::{ACCOUNTS, CONF, ORDERS, PROXIES},
         proxy::Proxies,
-        transaction::settle_accounts,
     },
-    wallet::{gen_wallet, send_transaction, sign_transaction},
+    wallet::{
+        gen_wallet,
+        get_all_balance,
+        transact::{dispatch_link_token, settle_accounts},
+        transact_core::{send_transaction, sign_transaction},
+    },
 };
 
 fn execute_task(t_id: u8, accounts: &[String], proxy: Option<&Arc<Mutex<Proxies>>>, kind: Option<u8>) {
@@ -62,14 +66,19 @@ pub fn dispatch_account(kind: Option<u8>, with_proxy: bool) {
 pub fn dispatch_task(with_proxy: bool) {
     let args: Vec<String> = env::args().collect();
     match args[1].as_str() {
+        "--balance" => get_all_balance(),
+        "--export" => dispatch_account(None, with_proxy),
+        "--dispatch" => dispatch_link_token(&args[2]),
+        "--gen-wallet" => gen_wallet(),
         "--redeem" => Detector::new()
             .with_proxy()
             .with_kinds(&CONF.kinds)
             .detect(),
-        "--export" => dispatch_account(None, with_proxy),
         "--settle" => settle_accounts(),  // TODO
-        "--transact" => send_transaction(&sign_transaction(&PathBuf::from(&args[2]), &args[3], &args[4], &args[5], "")),
-        "--gen-wallet" => gen_wallet(),
+        "--transact" => {
+            let (gas_limit, data) = if args.len() == 7 { (args[5].as_str(), args[6].as_str()) } else { ("0x186a0", "") };
+            send_transaction(&sign_transaction(&PathBuf::from(&args[2]), &args[3], &args[4], gas_limit, data))
+        }
         _ => panic!("Unexpected args.")
     }
 }
