@@ -14,6 +14,8 @@ use super::Account;
 
 impl<'a> Account<'a> {
     fn pull_order(&mut self, order_id: &str) {
+        self.session = self.build_client();
+
         let data;
         loop {
             data = match self.session
@@ -72,6 +74,8 @@ impl<'a> Account<'a> {
     }
 
     fn pull_order_list(&mut self, page: &str) -> bool {
+        self.session = self.build_client();
+
         let data;
         loop {
             data = match self.session
@@ -115,7 +119,6 @@ impl<'a> Account<'a> {
                         let order_id = order_id.as_str().unwrap();
                         if order_id[1..9] != CONF.data { return true; }
 
-                        self.session = self.build_client();
                         self.pull_order(order_id);
                     }
 
