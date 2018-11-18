@@ -3,6 +3,7 @@ pub mod transact_core;
 
 // --- std ---
 use std::{
+    u128,
     collections::HashSet,
     fs::{create_dir, read_dir},
     io::{Write, stdin, stdout},
@@ -16,7 +17,10 @@ use emerald_core::keystore::{KdfDepthLevel, KeyFile};
 use serde_json::{Value, from_str};
 
 // --- custom ---
-use crate::util::default_client_builder;
+use crate::util::{
+    default_client_builder,
+    init::GET_BALANCE_API,
+};
 
 pub struct Wallets {
     all: HashSet<PathBuf>,
@@ -112,5 +116,14 @@ fn get_info(url: &str, address: &str) -> String {
 }
 
 pub fn get_all_balance() {
-
+    for wallet in list_wallet("wallets") {
+        let wallet = wallet.file_name().unwrap().to_str().unwrap();
+        let balance = (
+            u128::from_str_radix(
+                &get_info(GET_BALANCE_API, wallet)[2..],
+                16,
+            ).unwrap() as f64
+        ) / 10f64.powi(18);
+        println!("{}: {}", wallet, balance);
+    }
 }

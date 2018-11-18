@@ -17,7 +17,7 @@ use crate::{
     wallet::{
         gen_wallet,
         get_all_balance,
-        transact::{dispatch_link_token, settle_accounts},
+        transact::{collect_link_token, dispatch_link_token, settle_accounts},
         transact_core::{send_transaction, sign_transaction},
     },
 };
@@ -67,6 +67,7 @@ pub fn dispatch_task(with_proxy: bool) {
     let args: Vec<String> = env::args().collect();
     match args[1].as_str() {
         "--balance" => get_all_balance(),
+        "--collect" => collect_link_token(),
         "--export" => dispatch_account(None, with_proxy),
         "--dispatch" => dispatch_link_token(&args[2]),
         "--gen-wallet" => gen_wallet(),
