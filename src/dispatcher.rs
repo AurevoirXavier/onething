@@ -33,7 +33,7 @@ fn execute_task(t_id: u8, accounts: &[String], proxy: Option<&Arc<Mutex<Proxies>
         match Account::new(username, password, proxy).sign_in(false) {
             Ok(account) => if let Some(kind) = kind { account.redeem(kind, false); } else { account.export(); }
             Err(e) => {
-//                println!("{}", e);  // TODO Debug
+                println!("{}", e);  // TODO Debug
                 continue;
             }
         }

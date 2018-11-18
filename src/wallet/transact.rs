@@ -1,10 +1,14 @@
 // --- std ---
-use std::{u128, thread};
+use std::{
+    u128,
+    time::Duration,
+    thread,
+};
 
 // --- custom ---
 use crate::util::{
     format_hex,
-    init::{CONF, GET_BALANCE_API, WALLETS}
+    init::{CONF, GET_BALANCE_API, WALLETS},
 };
 use super::{
     get_info,
@@ -54,6 +58,8 @@ pub fn dispatch_link_token(value: &str) {
         }
     }
 
+    thread::sleep(Duration::from_secs(1));
+
     get_all_balance();
     println!("Premier wallet [{}], remains [{}] link token.", from, format_hex(&get_info(GET_BALANCE_API, from)));
 }
@@ -93,6 +99,8 @@ pub fn collect_link_token() {
     }
 
     for handle in handles { handle.join().unwrap(); }
+
+    thread::sleep(Duration::from_secs(1));
 
     get_all_balance();
     println!("Premier wallet [{}], remains [{}] link token.", premier_wallet, format_hex(&get_info(GET_BALANCE_API, &premier_wallet)));

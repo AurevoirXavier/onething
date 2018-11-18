@@ -190,7 +190,7 @@ impl<'a> Account<'a> {
                     }
                 }
                 Err(e) => {
-//                    println!("{:?}", e);  // TODO Debug
+                    println!("{:?}", e);  // TODO Debug
                     continue;
                 }
             }

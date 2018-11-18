@@ -125,7 +125,7 @@ impl<'a> Transaction<'a> {
                     }
                 }
                 Err(e) => {
-//                    println!("{:?}", e);  // TODO Debug
+                    println!("{:?}", e);  // TODO Debug
                     continue;
                 }
             }
