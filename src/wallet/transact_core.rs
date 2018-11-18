@@ -2,7 +2,7 @@
 use std::{
     u128,
     fs::File,
-    io::Read,
+    io::{Read, Write},
     path::PathBuf,
 };
 

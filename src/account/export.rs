@@ -7,7 +7,7 @@
 use serde_json::{Value, from_str};
 
 // --- custom ---
-use crate::util::init::ORDER_LIST_API;
+use crate::util::init::{CODES, ORDER_LIST_API};
 use super::Account;
 
 impl<'a> Account<'a> {
@@ -33,7 +33,7 @@ impl<'a> Account<'a> {
         };
 
         let order_list: Value = from_str(&data).unwrap();
-//        println!("{}", order_list);  // TODO Debug
+        println!("{}", order_list);  // TODO Debug
         if let Some(i_ret) = order_list.get("iRet") {
             match i_ret.as_i64() {
                 // iRet: 0, sMsg: 成功

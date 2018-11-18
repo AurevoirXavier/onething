@@ -20,6 +20,7 @@ mod util;
 mod wallet;
 
 // --- custom ---
+use self::util::init::CONF;
 use self::dispatcher::dispatch_task;
 
-fn main() { dispatch_task(true); }
+fn main() { dispatch_task(CONF.export_with_proxy); }

@@ -3,8 +3,9 @@
   "transaction_proxy": "http://127.0.0.1:1087",
   "data": "20181118",
   "request_timeout": 10,
-  "account_per_thread": 4,
-  "wallet_per_thread": 1,
+  "account_per_thread": 10,
+  "wallet_per_thread": 4,
+  "export_with_proxy": false,
   "kinds": [
     9
   ]

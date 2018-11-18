@@ -28,7 +28,7 @@ fn execute_task(t_id: u8, accounts: &[String], proxy: Option<&Arc<Mutex<Proxies>
         let username = account[0];
         let password = account[1];
 
-        println!("Account [{}] at [{}] thread.", username, t_id);  // TODO Verbose info
+        println!("Account [{}] at [{}] thread.", username, t_id);
 
         match Account::new(username, password, proxy).sign_in(false) {
             Ok(account) => if let Some(kind) = kind { account.redeem(kind, false); } else { account.export(); }
@@ -43,12 +43,12 @@ fn execute_task(t_id: u8, accounts: &[String], proxy: Option<&Arc<Mutex<Proxies>
 pub fn dispatch_account(kind: Option<u8>, with_proxy: bool) {
     let mut handles = vec![];
     for (i, accounts) in ACCOUNTS.chunks(CONF.account_per_thread).enumerate() {
-        if with_proxy {
+        let handle = if with_proxy {
             let proxies = Arc::clone(&PROXIES);
-            let handle = thread::spawn(move || { execute_task(i as u8 + 1, accounts, Some(&proxies), kind); });
+            thread::spawn(move || { execute_task(i as u8 + 1, accounts, Some(&proxies), kind); })
         } else {
-            let handle = thread::spawn(move || { execute_task(i as u8 + 1, accounts, None, kind); });
-        }
+            thread::spawn(move || { execute_task(i as u8 + 1, accounts, None, kind); })
+        };
 
         handles.push(handle);
     }
@@ -66,7 +66,7 @@ pub fn dispatch_task(with_proxy: bool) {
     match args[1].as_str() {
         "--balance" => get_all_balance(),
         "--collect" => collect_link_token(),
-        "--export" => dispatch_account(None, false),
+        "--export" => dispatch_account(None, with_proxy),
         "--dispatch" => dispatch_link_token(&args[2]),
         "--gen-wallet" => gen_wallet(),
         "--redeem" => Detector::new()
