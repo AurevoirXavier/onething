@@ -28,7 +28,7 @@ fn execute_task(t_id: u8, accounts: &[String], proxy: Option<&Arc<Mutex<Proxies>
         let username = account[0];
         let password = account[1];
 
-        println!("Account {} at {} thread.", username, t_id);  // TODO Verbose info
+        println!("Account [{}] at [{}] thread.", username, t_id);  // TODO Verbose info
 
         match Account::new(username, password, proxy).sign_in(false) {
             Ok(account) => if let Some(kind) = kind { account.redeem(kind, false); } else { account.export(); }

@@ -13,6 +13,7 @@ use emerald_core::{
     keystore::KeyFile,
 };
 use reqwest::Proxy;
+use serde_json::{Value, from_str};
 
 // --- custom ---
 use crate::util::{
@@ -107,17 +108,19 @@ impl<'a> Transaction<'a> {
                 .unwrap()
                 .post(SEND_RAW_TRANSACTION_API)
                 .json(&json!({
-                "jsonrpc": "2.0",
-                "method": "eth_sendRawTransaction",
-                "params": [self.signed_raw_transaction],
-                "id": 1
-            })).send() {
+                    "jsonrpc": "2.0",
+                    "method": "eth_sendRawTransaction",
+                    "params": [self.signed_raw_transaction],
+                    "id": 1
+                })).send() {
                 Ok(mut resp) => {
                     let data = resp.text().unwrap();
 //                println!("{}", data);  // TODO Debug
-                    if data.contains('<') {
-                        continue;
-                    } else if data.contains("result") {
+                    if data.contains('<') { continue; }
+
+                    let data: Value = from_str(&data);
+                    if let Some(hash) = data.get("result") {
+                        println!("Succeed, transaction hash: [{}]", hash);
                         break;
                     } else {
 //                        println!("{}", data);

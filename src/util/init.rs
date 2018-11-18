@@ -47,7 +47,8 @@ lazy_static! {
     pub static ref ORDERS: Arc<Mutex<File>> = {
         Arc::new(Mutex::new(OpenOptions::new()
             .append(true)
-            .open("orders")
+            .create(true)
+            .open("orders.txt")
             .unwrap()))
     };
 

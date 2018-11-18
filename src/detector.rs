@@ -49,12 +49,12 @@ impl Detector {
 
             let handle = thread::spawn(move || {
                 loop {
-                    println!("Detecting {}.", kind);
+                    println!("Detecting [{}].", kind);
                     match detector.redeem(kind, true) {
                         0 => {
-                            println!("{} detected.", kind);
+                            println!("[{}] detected.", kind);
                             dispatch_account(Some(kind), proxy);
-                            println!("{} detecting thread end.", kind);
+                            println!("[{}] detecting thread end.", kind);
                             break;
                         }
                         7 => if let Some(new_detector) = DETECTORS.lock().unwrap().next() {

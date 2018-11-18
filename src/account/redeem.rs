@@ -49,7 +49,7 @@ fn build_payload(kind: u8) -> Value {
 fn save_and_pay_order(account: &str, data: &Value) {
     let to = data["to"].as_str().unwrap().to_owned();
     let value = data["value"].as_str().unwrap().to_owned();
-    let gas_limit = data["gas_limit"].as_u64().unwrap().to_string();
+    let gas_limit = format!("{:#x}", data["gas_limit"].as_u64().unwrap());
     let data = data["data"].as_str().unwrap().to_owned();
 
     {
@@ -57,7 +57,8 @@ fn save_and_pay_order(account: &str, data: &Value) {
         writeln!(orders, "{}-{}-{}-{}-{}", account, to, value, gas_limit, data).unwrap();
     }
 
-    let handle = thread::spawn(move || { sign_transaction_with_random_wallet(&gas_limit, &to, &value, &data); });
+    let handle = thread::spawn(move || { sign_transaction_with_random_wallet(&to, &value, &gas_limit, &data).send(); });
+
     handle.join().unwrap();
 }
 
@@ -92,20 +93,19 @@ impl<'a> Account<'a> {
             }
 
             let order: Value = from_str(&data).unwrap();
-            println!("{}", order);  // TODO Debug
+//            println!("{}", order);  // TODO Debug
             if let Some(i_ret) = order.get("iRet") {
                 match i_ret.as_i64() {
                     // iRet: -1, sMsg: 提交太频繁，请稍后再试
                     // iRet: -1, sMsg: 合约调用失败，请重试
                     Some(-1) => {
                         if detect { return 0; }
-
                         sleep(Duration::from_secs(1));
                         continue;
                     }
                     // iRet: 0, sMsg: 成功
                     Some(0) => {
-                        println!("{}", data);  // TODO Verbose info
+                        println!("Kind: [{}], succeed.", kind);
                         save_and_pay_order(&self.username, &order["data"]);
                         return 0;
                     }
@@ -123,7 +123,7 @@ impl<'a> Account<'a> {
                     }
                     // Unhandled status code
                     Some(i_ret) => {
-                        println!("Catch unhandled i_ret code {} in redeem!!\n{}", i_ret, order);  // TODO Debug
+                        println!("Catch unhandled i_ret code [{}] in redeem!!\n{}", i_ret, order);  // TODO Debug
                         continue;
                     }
                     None => unreachable!()

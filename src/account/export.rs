@@ -49,7 +49,7 @@ impl<'a> Account<'a> {
                 }
                 // Unhandled status code
                 Some(i_ret) => {
-                    println!("Catch unhandled i_ret code {} in pull_order_list!!\n{}", i_ret, order_list);
+                    println!("Catch unhandled i_ret code [{}] in pull_order_list!!\n{}", i_ret, order_list);
                     true
                 }
                 _ => unreachable!()
