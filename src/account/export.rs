@@ -23,6 +23,7 @@ impl<'a> Account<'a> {
                 Ok(mut resp) => resp.text().unwrap(),
                 Err(e) => {
                     println!("{:?}", e);
+                    self.session = self.build_client();
                     continue;
                 }
             };
@@ -82,6 +83,7 @@ impl<'a> Account<'a> {
                 Ok(mut resp) => resp.text().unwrap(),
                 Err(e) => {
                     println!("{:?}", e);
+                    self.session = self.build_client();
                     continue;
                 }
             };
@@ -113,6 +115,7 @@ impl<'a> Account<'a> {
                         let order_id = order_id.as_str().unwrap();
                         if order_id[1..9] != CONF.data { return true; }
 
+                        self.session = self.build_client();
                         self.pull_order(order_id);
                     }
 

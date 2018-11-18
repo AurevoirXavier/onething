@@ -101,7 +101,7 @@ impl<'a> Transaction<'a> {
 
     pub fn send(&mut self) {
         loop {
-            match default_client_builder()
+            match default_client_builder(10)
                 .default_headers(TRANSACTION_HEADERS.clone())
                 .proxy(Proxy::https(&CONF.transaction_proxy).unwrap())
                 .build()

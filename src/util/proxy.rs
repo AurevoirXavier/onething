@@ -14,7 +14,7 @@ impl Proxies {
 
     pub fn update(&mut self, api: &str) {
         loop {
-            if let Ok(mut resp) = default_client_builder()
+            if let Ok(mut resp) = default_client_builder(0)
                 .build()
                 .unwrap()
                 .get(api)

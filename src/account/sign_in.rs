@@ -97,7 +97,7 @@ impl<'a> Account<'a> {
     }
 
     pub fn build_client(&self) -> Client {
-        let client_builder = default_client_builder().default_headers(self.cookie.clone());
+        let client_builder = default_client_builder(0).default_headers(self.cookie.clone());
 
         let proxy = self.ask_proxy();
         if proxy.is_empty() {
@@ -164,7 +164,7 @@ impl<'a> Account<'a> {
         payload.push(("sign".to_string(), sign));
 
         loop {
-            match default_client_builder()
+            match default_client_builder(0)
                 .build()
                 .unwrap()
                 .post(SIGN_IN_API)

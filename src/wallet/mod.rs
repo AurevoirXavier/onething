@@ -99,7 +99,7 @@ pub fn gen_wallet() {
 
 fn get_info(url: &str, address: &str) -> String {
     loop {
-        if let Ok(mut resp) = default_client_builder()
+        if let Ok(mut resp) = default_client_builder(0)
             .build()
             .unwrap()
             .post(url)
