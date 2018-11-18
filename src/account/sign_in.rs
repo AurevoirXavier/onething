@@ -22,7 +22,7 @@ use super::Account;
 #[derive(Debug)]
 pub enum SignInError {
     AccountWrong,
-    //    SignatureWrong,  // TODO already handled
+    //    SignatureWrong,  // Already handled
     UnHandle,
 }
 
@@ -30,7 +30,7 @@ impl fmt::Display for SignInError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             SignInError::AccountWrong => write!(f, "Fail to sign in, account or password is wrong!"),
-//            SignInError::SignatureWrong => write!(f, "Fail to sign in, signature is wrong!"),  // TODO already handled
+//            SignInError::SignatureWrong => write!(f, "Fail to sign in, signature is wrong!"),  // Already handled
             SignInError::UnHandle => write!(f, "Fail to sign in, unknown error!")
         }
     }
@@ -184,7 +184,7 @@ impl<'a> Account<'a> {
                             // iRet: -129, sMsg: Incorrect account or password. Please enter again
                             Some(-129) => return Err(SignInError::AccountWrong),
                             // iRet: -109, sMsg: Signature error
-//                            Some(-109) => return Err(SignInError::SignatureWrong),  // TODO already handled
+//                            Some(-109) => return Err(SignInError::SignatureWrong),  // Already handled
                             _ => return Err(SignInError::UnHandle)
                         }
                     }

@@ -119,7 +119,7 @@ impl<'a> Account<'a> {
                             return 1;
                         }
                     }
-                    // TODO unhandled status code
+                    // Unhandled status code
                     Some(i_ret) => {
                         println!("Catch unhandled i_ret code {} in redeem!!\n{}", i_ret, order);  // TODO Debug
                         continue;

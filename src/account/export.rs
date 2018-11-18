@@ -47,7 +47,7 @@ impl<'a> Account<'a> {
 
                     true
                 }
-                // TODO more status code
+                // Unhandled status code
                 Some(i_ret) => {
                     println!("Catch unhandled i_ret code {} in pull_order_list!!\n{}", i_ret, order_list);
                     true
@@ -57,7 +57,5 @@ impl<'a> Account<'a> {
         } else { self.pull_order_list(page) }
     }
 
-    pub fn export(&mut self) {
-        for page in 0u8.. { if self.pull_order_list(&page.to_string()) { break; } }
-    }
+    pub fn export(&mut self) { for page in 0u8.. { if self.pull_order_list(&page.to_string()) { break; } } }
 }

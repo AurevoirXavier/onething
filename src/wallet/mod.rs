@@ -25,11 +25,7 @@ pub struct Wallets {
 
 impl Wallets {
     pub fn new() -> Wallets {
-        let all: Vec<PathBuf> = read_dir("wallets").unwrap()
-            .map(|d| d.unwrap().path())
-            .filter(|path| path.file_name().unwrap().to_str().unwrap().starts_with("0x"))
-            .collect();
-
+        let all: Vec<PathBuf> = list_wallet("wallets");
         Wallets {
             all: all.iter().cloned().collect(),
             available: all.into_iter().cycle(),
@@ -52,6 +48,13 @@ impl Wallets {
         if self.all.len() == 0 { panic!("All wallets are unavailable."); }
         self.available.next().unwrap()
     }
+}
+
+pub fn list_wallet(path: &str) -> Vec<PathBuf> {
+    read_dir(path).unwrap()
+        .map(|d| d.unwrap().path())
+        .filter(|path| path.file_name().unwrap().to_str().unwrap().starts_with("0x"))
+        .collect()
 }
 
 pub fn gen_wallet() {
