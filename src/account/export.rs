@@ -1,5 +1,9 @@
 // --- std ---
-use std::io::Write;
+use std::{
+    io::Write,
+    thread::sleep,
+    time::Duration,
+};
 
 // --- external ---
 use serde_json::{Value, from_str};
@@ -33,6 +37,11 @@ impl<'a> Account<'a> {
 //        println!("{}", order_list);  // TODO Debug
         if let Some(i_ret) = order.get("iRet") {
             match i_ret.as_i64() {
+                // iRet: -1, sMsg: 操作太频繁，请稍后重试
+                Some(-1) => {
+                    sleep(Duration::from_secs(1));
+                    self.pull_order(order_id);
+                }
                 // iRet: 0, sMsg: 成功
                 Some(0) => {
                     let info = &order["data"]["lists"][0];
@@ -87,6 +96,11 @@ impl<'a> Account<'a> {
 //        println!("{}", order_list);  // TODO Debug
         if let Some(i_ret) = order_list.get("iRet") {
             match i_ret.as_i64() {
+                // iRet: -1, sMsg: 操作太频繁，请稍后重试
+                Some(-1) => {
+                    sleep(Duration::from_secs(1));
+                    self.pull_order_list(page)
+                }
                 // iRet: 0, sMsg: 成功
                 Some(0) => {
                     let data = &order_list["data"];

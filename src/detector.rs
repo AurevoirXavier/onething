@@ -1,7 +1,7 @@
 // --- std ---
 use std::{
     mem::swap,
-    thread,
+    thread::{self, sleep},
     time::Duration,
 };
 
@@ -74,7 +74,7 @@ impl Detector {
                         _ => ()
                     }
 
-                    thread::sleep(Duration::from_secs(1));
+                    sleep(Duration::from_secs(1));
                 }
             });
 
