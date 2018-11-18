@@ -16,6 +16,7 @@ use super::proxy::Proxies;
 
 pub const GET_BALANCE_API: &'static str = "https://walletapi.onethingpcs.com/getBalance";
 pub const GET_TRANSACTION_COUNT_API: &'static str = "https://walletapi.onethingpcs.com/getTransactionCount";
+pub const ORDER_INFO_API: &'static str = "https://api-mall.onethingpcs.com/order/info";
 pub const ORDER_LIST_API: &'static str = "https://api-mall.onethingpcs.com/order/list";
 pub const SEND_RAW_TRANSACTION_API: &'static str = "https://walletapi.onethingpcs.com/sendRawTransaction";
 pub const SIGN_IN_API: &'static str = "https://api-accw.onethingpcs.com/user/login";

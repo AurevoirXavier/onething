@@ -39,7 +39,11 @@ impl Detector {
         let detector = DETECTORS.lock().unwrap().next().unwrap();
         let detector: Vec<&str> = detector.split('=').collect();
         let mut detector = Account::new(detector[0], detector[1], Some(&PROXIES));
-        detector.sign_in(false).unwrap();
+
+        if let Err(e) = detector.sign_in(true) {
+            println!("{}", e);  // TODO Debug
+            return;
+        }
 
         let mut handles = vec![];
         for &kind in self.kinds.iter() {
