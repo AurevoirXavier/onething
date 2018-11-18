@@ -52,10 +52,7 @@ fn save_and_pay_order(account: &str, data: &Value) {
     let gas_limit = format!("{:#x}", data["gas_limit"].as_u64().unwrap());
     let data = data["data"].as_str().unwrap().to_owned();
 
-    {
-        let mut orders = ORDERS.lock().unwrap();
-        writeln!(orders, "{}-{}-{}-{}-{}", account, to, value, gas_limit, data).unwrap();
-    }
+    writeln!(ORDERS.lock().unwrap(), "{}-{}-{}-{}-{}", account, to, value, gas_limit, data).unwrap();
 
     let handle = thread::spawn(move || { sign_transaction_with_random_wallet(&to, &value, &gas_limit, &data).send(); });
 

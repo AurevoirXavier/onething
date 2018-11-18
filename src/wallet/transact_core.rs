@@ -18,7 +18,7 @@ use serde_json::{Value, from_str};
 // --- custom ---
 use crate::util::{
     default_client_builder,
-    init::{CONF, GET_BALANCE_API, GET_TRANSACTION_COUNT_API, SEND_RAW_TRANSACTION_API, TRANSACTION_HEADERS, WALLETS},
+    init::{CONF, GET_BALANCE_API, GET_TRANSACTION_COUNT_API, SEND_RAW_TRANSACTION_API, TRANSACTIONS, TRANSACTION_HEADERS, WALLETS},
 };
 use super::get_info;
 
@@ -118,9 +118,10 @@ impl<'a> Transaction<'a> {
 //                println!("{}", data);  // TODO Debug
                     if data.contains('<') { continue; }
 
-                    let data: Value = from_str(&data);
+                    let data: Value = from_str(&data).unwrap();
                     if let Some(hash) = data.get("result") {
                         println!("Succeed, transaction hash: [{}]", hash);
+                        writeln!(TRANSACTIONS.lock().unwrap(), "{}", hash).unwrap();
                         break;
                     } else {
 //                        println!("{}", data);

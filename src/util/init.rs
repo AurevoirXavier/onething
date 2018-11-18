@@ -48,11 +48,19 @@ lazy_static! {
         Arc::new(Mutex::new(OpenOptions::new()
             .append(true)
             .create(true)
-            .open("orders.txt")
+            .open(format!("orders_{}.txt", CONF.data))
             .unwrap()))
     };
 
     pub static ref PROXIES: Arc<Mutex<Proxies>> = Arc::new(Mutex::new(Proxies::new()));
+
+    pub static ref TRANSACTIONS: Arc<Mutex<File>> = {
+        Arc::new(Mutex::new(OpenOptions::new()
+            .append(true)
+            .create(true)
+            .open(format!("transactions_{}.txt", CONF.data))
+            .unwrap()))
+    };
 
     pub static ref TRANSACTION_HEADERS: HeaderMap = {
         let mut headers = HeaderMap::new();
@@ -68,6 +76,7 @@ lazy_static! {
 pub struct Conf {
     pub proxy_pool_api: String,
     pub transaction_proxy: String,
+    pub data: String,
     pub request_timeout: u64,
     pub account_per_thread: usize,
     pub wallet_per_thread: usize,
