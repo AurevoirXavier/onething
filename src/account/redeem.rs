@@ -57,7 +57,8 @@ fn save_and_pay_order(account: &str, data: &Value) {
         writeln!(orders, "{}-{}-{}-{}-{}", account, to, value, gas_limit, data).unwrap();
     }
 
-    thread::spawn(move || { sign_transaction_with_random_wallet(&gas_limit, &to, &value, &data); });
+    let handle = thread::spawn(move || { sign_transaction_with_random_wallet(&gas_limit, &to, &value, &data); });
+    handle.join().unwrap();
 }
 
 impl<'a> Account<'a> {
@@ -79,7 +80,7 @@ impl<'a> Account<'a> {
                     }
                 };
 
-//                println!("{}", payload);
+//                println!("{}", payload);  // TODO Debug
 //                println!("{}", data);  // TODO Debug
 
                 if data.contains('<') {
@@ -104,6 +105,7 @@ impl<'a> Account<'a> {
                     }
                     // iRet: 0, sMsg: 成功
                     Some(0) => {
+                        println!("{}", data);  // TODO Verbose info
                         save_and_pay_order(&self.username, &order["data"]);
                         return 0;
                     }
@@ -115,7 +117,7 @@ impl<'a> Account<'a> {
                     Some(403) => match self.sign_in(true) {
                         Ok(account) => return account.redeem(kind, false),
                         Err(e) => {
-                            println!("{}", e);  // TODO Debug
+//                            println!("{}", e);  // TODO Debug
                             return 1;
                         }
                     }

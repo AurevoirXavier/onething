@@ -3,12 +3,12 @@ pub mod transact_core;
 
 // --- std ---
 use std::{
-    u128,
     collections::HashSet,
     fs::{create_dir, read_dir},
     io::{Write, stdin, stdout},
     iter::Cycle,
     path::{Path, PathBuf},
+    thread,
     vec::IntoIter,
 };
 
@@ -19,7 +19,8 @@ use serde_json::{Value, from_str};
 // --- custom ---
 use crate::util::{
     default_client_builder,
-    init::GET_BALANCE_API,
+    format_hex,
+    init::{CONF, GET_BALANCE_API},
 };
 
 pub struct Wallets {
@@ -54,11 +55,16 @@ impl Wallets {
     }
 }
 
-pub fn list_wallet(path: &str) -> Vec<PathBuf> {
+fn list_wallet(path: &str) -> Vec<PathBuf> {
     read_dir(path).unwrap()
         .map(|d| d.unwrap().path())
         .filter(|path| path.file_name().unwrap().to_str().unwrap().starts_with("0x"))
         .collect()
+}
+
+fn get_premier_wallet() -> PathBuf {
+    let premier_wallet = list_wallet(".");
+    if premier_wallet.is_empty() { panic!("Can find premier wallet."); } else { premier_wallet[0].to_owned() }
 }
 
 pub fn gen_wallet() {
@@ -116,14 +122,19 @@ fn get_info(url: &str, address: &str) -> String {
 }
 
 pub fn get_all_balance() {
-    for wallet in list_wallet("wallets") {
-        let wallet = wallet.file_name().unwrap().to_str().unwrap();
-        let balance = (
-            u128::from_str_radix(
-                &get_info(GET_BALANCE_API, wallet)[2..],
-                16,
-            ).unwrap() as f64
-        ) / 10f64.powi(18);
-        println!("{}: {}", wallet, balance);
+    let mut handles = vec![];
+    for wallets in list_wallet("wallets").chunks(CONF.wallet_per_thread) {
+        let wallets = wallets.to_vec();
+        let handle = thread::spawn(move || {
+            for wallet in wallets {
+                let wallet = wallet.file_name().unwrap().to_str().unwrap();
+                let balance = format_hex(&get_info(GET_BALANCE_API, wallet));
+                println!("Wallet [{}] remains [{}] link token.", wallet, balance);
+            }
+        });
+
+        handles.push(handle);
     }
+
+    for handle in handles { handle.join().unwrap(); }
 }

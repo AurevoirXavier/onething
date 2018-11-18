@@ -65,11 +65,12 @@ lazy_static! {
 
 #[derive(Deserialize)]
 pub struct Conf {
-    pub account_per_thread: usize,
-    pub kinds: Vec<u8>,
     pub proxy_pool_api: String,
-    pub request_timeout: u64,
     pub transaction_proxy: String,
+    pub request_timeout: u64,
+    pub account_per_thread: usize,
+    pub wallet_per_thread: usize,
+    pub kinds: Vec<u8>,
 }
 
 fn load_conf() -> Conf { from_reader(File::open("conf.json").unwrap()).unwrap() }

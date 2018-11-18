@@ -2,7 +2,10 @@ pub mod init;
 pub mod proxy;
 
 // --- std ---
-use std::time::Duration;
+use std::{
+    u128,
+    time::Duration,
+};
 
 // --- external ---
 use reqwest::{Client, ClientBuilder};
@@ -17,3 +20,5 @@ pub fn default_client_builder() -> ClientBuilder {
         .gzip(true)
         .timeout(Duration::from_secs(CONF.request_timeout))
 }
+
+pub fn format_hex(hex: &str) -> f64 { u128::from_str_radix(&hex[2..], 16).unwrap() as f64 / 10f64.powi(18) }

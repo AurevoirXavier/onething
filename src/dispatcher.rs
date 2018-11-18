@@ -18,7 +18,7 @@ use crate::{
         gen_wallet,
         get_all_balance,
         transact::{collect_link_token, dispatch_link_token, settle_accounts},
-        transact_core::{send_transaction, sign_transaction},
+        transact_core::Transaction,
     },
 };
 
@@ -28,12 +28,12 @@ fn execute_task(t_id: u8, accounts: &[String], proxy: Option<&Arc<Mutex<Proxies>
         let username = account[0];
         let password = account[1];
 
-        println!("Account {} at {} thread.", username, t_id);
+        println!("Account {} at {} thread.", username, t_id);  // TODO Verbose info
 
         match Account::new(username, password, proxy).sign_in(false) {
             Ok(account) => if let Some(kind) = kind { account.redeem(kind, false); } else { account.export(); }
             Err(e) => {
-                println!("{}", e);
+//                println!("{}", e);  // TODO Debug
                 continue;
             }
         }
@@ -78,7 +78,9 @@ pub fn dispatch_task(with_proxy: bool) {
         "--settle" => settle_accounts(),  // TODO
         "--transact" => {
             let (gas_limit, data) = if args.len() == 7 { (args[5].as_str(), args[6].as_str()) } else { ("0x186a0", "") };
-            send_transaction(&sign_transaction(&PathBuf::from(&args[2]), &args[3], &args[4], gas_limit, data))
+            Transaction::new(&args[3], &args[4], gas_limit, data)
+                .sign(&PathBuf::from(&args[2]))
+                .send();
         }
         _ => panic!("Unexpected args.")
     }

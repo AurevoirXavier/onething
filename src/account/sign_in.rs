@@ -103,7 +103,7 @@ impl<'a> Account<'a> {
         if proxy.is_empty() {
             client_builder.build().unwrap()
         } else {
-            println!("Account: {}, with proxy: {}.", self.username, proxy);  // TODO Debug
+//            println!("Account: {}, with proxy: {}.", self.username, proxy);  // TODO Debug
 //            println!("{}", self.proxies.unwrap().lock().unwrap().0.len());  // TODO Debug
 
             let proxy = format!("http://{}", proxy);
@@ -189,7 +189,10 @@ impl<'a> Account<'a> {
                         }
                     }
                 }
-                Err(e) => println!("{:?}", e)  // TODO Debug
+                Err(e) => {
+//                    println!("{:?}", e);  // TODO Debug
+                    continue;
+                }
             }
         }
     }
