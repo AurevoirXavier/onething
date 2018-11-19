@@ -80,7 +80,7 @@ pub fn dispatch_task(with_proxy: bool) {
             .with_proxy()
             .with_kinds(&CONF.kinds)
             .detect(),
-        "--settle" => settle_accounts(),  // TODO
+        "--settle" => settle_accounts(),
         "--transact" => {
             let (gas_limit, data) = if args.len() == 7 { (args[5].as_str(), args[6].as_str()) } else { ("0x186a0", "") };
             Transaction::new(&args[3], &to_hex(&args[4]), gas_limit, data)

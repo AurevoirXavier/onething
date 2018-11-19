@@ -1,7 +1,8 @@
 // --- std ---
 use std::{
     u128,
-    io::{stdin, stdout, Write},
+    fs::File,
+    io::{stdin, stdout, Read, Write},
     thread::{self, sleep},
     time::Duration,
 };
@@ -113,4 +114,27 @@ pub fn collect_link_token() {
     println!("PREMIER {}", format_balance(&premier_wallet));
 }
 
-pub fn settle_accounts() {}  // TODO
+pub fn settle_accounts() {
+    let orders = {
+        let mut orders = String::new();
+        let mut f = File::open(&format!("orders_{}", CONF.date)).unwrap();
+        f.read_to_string(&mut orders).unwrap();
+
+        orders
+    };
+
+    let mut handles = vec![];
+    for order in orders.lines() {
+        let mut info = order.split('-');
+        let to = info.next().unwrap().to_owned();
+        let value = info.next().unwrap().to_owned();
+        let gas_limit = info.next().unwrap().to_owned();
+        let data = info.next().unwrap().to_owned();
+
+        let handle = thread::spawn(move || { sign_transaction_with_random_wallet(&to, &value, &gas_limit, &data).send(); });
+
+        handles.push(handle);
+    }
+
+    for handle in handles { handle.join().unwrap(); }
+}

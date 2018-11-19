@@ -1,17 +1,17 @@
 {
-  "proxy_pool_api": "http://api3.xiguadaili.com/ip/?tid=555538032022318&num=1000&category=2",
-  "transaction_proxy": "http://127.0.0.1:1087",
-  "date": "20181119",
-  "request_timeout": 5,
-  "account_per_thread": 8,
-  "wallet_per_thread": 4,
-  "export_with_proxy": true,
-  "kinds": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6
-  ]
+    "proxy_pool_api": "http://api3.xiguadaili.com/ip/?tid=555538032022318&num=1000&category=2",
+    "transaction_proxy": "http://127.0.0.1:1087",
+    "date": "20181119",
+    "request_timeout": 5,
+    "account_per_thread": 8,
+    "wallet_per_thread": 1,
+    "export_with_proxy": true,
+    "kinds": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+    ]
 }
