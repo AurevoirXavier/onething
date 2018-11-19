@@ -97,7 +97,7 @@ pub fn gen_wallet() {
     }
 }
 
-fn get_info(url: &str, address: &str) -> String {
+pub fn get_info(url: &str, address: &str) -> String {
     loop {
         if let Ok(mut resp) = default_client_builder(0)
             .build()
@@ -121,15 +121,18 @@ fn get_info(url: &str, address: &str) -> String {
     }
 }
 
+pub fn format_balance_output(address: &str) -> String {
+    let balance = format_hex(&get_info(GET_BALANCE_API, address));
+    format!("Wallet [{}] remains [{}] link token.", address, balance)
+}
+
 pub fn get_all_balance() {
     let mut handles = vec![];
     for wallets in list_wallet("wallets").chunks(CONF.wallet_per_thread) {
         let wallets = wallets.to_vec();
         let handle = thread::spawn(move || {
             for wallet in wallets {
-                let wallet = wallet.file_name().unwrap().to_str().unwrap();
-                let balance = format_hex(&get_info(GET_BALANCE_API, wallet));
-                println!("Wallet [{}] remains [{}] link token.", wallet, balance);
+                println!("{}", format_balance_output(wallet.file_name().unwrap().to_str().unwrap()));
             }
         });
 

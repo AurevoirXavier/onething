@@ -15,6 +15,7 @@ use crate::{
         proxy::Proxies,
     },
     wallet::{
+        format_balance_output,
         gen_wallet,
         get_all_balance,
         transact::{collect_link_token, dispatch_link_token, settle_accounts},
@@ -64,7 +65,7 @@ pub fn dispatch_account(kind: Option<u8>, with_proxy: bool) {
 pub fn dispatch_task(with_proxy: bool) {
     let args: Vec<String> = env::args().collect();
     match args[1].as_str() {
-        "--balance" => get_all_balance(),
+        "--balance" => if args.len() == 3 { println!("{}", format_balance_output(&args[2])); } else { get_all_balance(); }
         "--collect" => collect_link_token(),
         "--export" => dispatch_account(None, with_proxy),
         "--dispatch" => dispatch_link_token(&args[2]),

@@ -6,11 +6,9 @@ use std::{
 };
 
 // --- custom ---
-use crate::util::{
-    format_hex,
-    init::{CONF, GET_BALANCE_API, WALLETS},
-};
+use crate::util::init::{CONF, GET_BALANCE_API, WALLETS};
 use super::{
+    format_balance_output,
     get_info,
     get_all_balance,
     get_premier_wallet,
@@ -61,7 +59,7 @@ pub fn dispatch_link_token(value: &str) {
     sleep(Duration::from_secs(1));
 
     get_all_balance();
-    println!("Premier wallet [{}], remains [{}] link token.", from, format_hex(&get_info(GET_BALANCE_API, from)));
+    println!("{}", format_balance_output(from));
 }
 
 pub fn collect_link_token() {
@@ -103,7 +101,7 @@ pub fn collect_link_token() {
     sleep(Duration::from_secs(1));
 
     get_all_balance();
-    println!("Premier wallet [{}], remains [{}] link token.", premier_wallet, format_hex(&get_info(GET_BALANCE_API, &premier_wallet)));
+    println!("PREMIER {}", format_balance_output(&premier_wallet));
 }
 
 pub fn settle_accounts() {}  // TODO
