@@ -28,6 +28,7 @@ pub struct Transaction<'a> {
     value: &'a str,
     gas_limit: &'a str,
     data: &'a str,
+    from: String,
     signed_raw_transaction: String,
 }
 
@@ -38,54 +39,62 @@ impl<'a> Transaction<'a> {
             value,
             gas_limit,
             data,
+            from: String::new(),
             signed_raw_transaction: String::new(),
         }
     }
 
     pub fn sign(&mut self, wallet: &PathBuf) -> &mut Self {
-        let nonce = get_info(GET_TRANSACTION_COUNT_API, wallet.file_name().unwrap().to_str().unwrap());
-        let value = format!("{:#x}", self.value.parse::<u128>().unwrap());
+        let nonce = {
+            let from = wallet.file_name().unwrap().to_str().unwrap();
+            self.from = from.to_owned();
 
-        let private_key = {
-            let mut key_file = String::new();
-
-            // TODO File not found
-            File::open(wallet)
-                .unwrap()
-                .read_to_string(&mut key_file)
-                .unwrap();
-
-            KeyFile::decode(key_file)
-                .unwrap()
-                .decrypt_key("123456789")
-                .unwrap()
-                .to_hex()
+            get_info(GET_TRANSACTION_COUNT_API, from)
         };
 
         let gil = Python::acquire_gil();
         let py = gil.python();
         let web3 = py.import("web3").unwrap();
+        let signed_transaction = {
+            let transaction = {
+                let transaction = PyDict::new(py);
+                transaction.set_item(py, "gas", self.gas_limit).unwrap();
+                transaction.set_item(py, "gasPrice", "0x174876e800").unwrap();
+                transaction.set_item(py, "nonce", nonce).unwrap();
+                transaction.set_item(py, "data", self.data).unwrap();
 
-        let transaction = {
-            let transaction = PyDict::new(py);
-            transaction.set_item(py, "gas", self.gas_limit).unwrap();
-            transaction.set_item(py, "gasPrice", "0x174876e800").unwrap();
-            transaction.set_item(py, "nonce", nonce).unwrap();
-            transaction.set_item(py, "data", self.data).unwrap();
+                let web3 = web3.get(py, "Web3").unwrap();
+                let to = web3.call_method(py, "toChecksumAddress", (self.to, ), None).unwrap();
 
-            let web3 = web3.get(py, "Web3").unwrap();
-            let to = web3.call_method(py, "toChecksumAddress", (self.to, ), None).unwrap();
+                transaction.set_item(py, "to", to).unwrap();
+                transaction.set_item(py, "value", format!("{:#x}", self.value.parse::<u128>().unwrap())).unwrap();
 
-            transaction.set_item(py, "to", to).unwrap();
-            transaction.set_item(py, "value", value).unwrap();
+                transaction
+            };
 
-            transaction
+//            println!("{:?}", transaction.items(py));  // TODO Debug
+
+            let private_key = {
+                let mut key_file = String::new();
+
+                // TODO File not found
+                File::open(wallet)
+                    .unwrap()
+                    .read_to_string(&mut key_file)
+                    .unwrap();
+
+                KeyFile::decode(key_file)
+                    .unwrap()
+                    .decrypt_key("123456789")
+                    .unwrap()
+                    .to_hex()
+            };
+
+            web3.get(py, "Account")
+                .unwrap()
+                .call_method(py, "signTransaction", (transaction, private_key), None)
+                .unwrap()
         };
-
-//    println!("{:?}", transaction.items(py));  // TODO Debug
-
-        let account = web3.get(py, "Account").unwrap();
-        let signed_transaction = account.call_method(py, "signTransaction", (transaction, private_key), None).unwrap();
 
 //    println!("{:?}", signed_transaction);  // TODO Debug
 

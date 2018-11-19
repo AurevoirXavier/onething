@@ -9,5 +9,7 @@ target
 new-wallets
 wallets
 
+0x*
 accounts.txt
+accounts_backup.txt
 detectors.txt
