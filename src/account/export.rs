@@ -24,7 +24,7 @@ impl<'a> Account<'a> {
                 .send() {
                 Ok(mut resp) => resp.text().unwrap(),
                 Err(e) => {
-                    println!("{:?}", e);
+//                    println!("{:?}", e);
                     self.session = self.build_client();
                     continue;
                 }
@@ -86,7 +86,7 @@ impl<'a> Account<'a> {
                 ]).send() {
                 Ok(mut resp) => resp.text().unwrap(),
                 Err(e) => {
-                    println!("{:?}", e);
+//                    println!("{:?}", e);
                     self.session = self.build_client();
                     continue;
                 }
@@ -117,7 +117,7 @@ impl<'a> Account<'a> {
 //                        println!("{}", order_id);  // TODO Debug
 
                         let order_id = order_id.as_str().unwrap();
-                        if order_id[1..9] != CONF.data { return true; }
+                        if order_id[1..9] != CONF.date { return true; }
 
                         self.pull_order(order_id);
                     }

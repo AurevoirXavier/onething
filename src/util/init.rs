@@ -35,7 +35,7 @@ lazy_static! {
         Arc::new(Mutex::new(OpenOptions::new()
             .append(true)
             .create(true)
-            .open(format!("codes_{}.txt", CONF.data))
+            .open(format!("codes_{}.txt", CONF.date))
             .unwrap()))
     };
 
@@ -57,7 +57,7 @@ lazy_static! {
         Arc::new(Mutex::new(OpenOptions::new()
             .append(true)
             .create(true)
-            .open(format!("orders_{}.txt", CONF.data))
+            .open(format!("orders_{}.txt", CONF.date))
             .unwrap()))
     };
 
@@ -67,7 +67,7 @@ lazy_static! {
         Arc::new(Mutex::new(OpenOptions::new()
             .append(true)
             .create(true)
-            .open(format!("transactions_{}.txt", CONF.data))
+            .open(format!("transactions_{}.txt", CONF.date))
             .unwrap()))
     };
 
@@ -85,7 +85,7 @@ lazy_static! {
 pub struct Conf {
     pub proxy_pool_api: String,
     pub transaction_proxy: String,
-    pub data: String,
+    pub date: String,
     pub request_timeout: u64,
     pub account_per_thread: usize,
     pub wallet_per_thread: usize,

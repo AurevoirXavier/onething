@@ -134,12 +134,12 @@ impl<'a> Transaction<'a> {
                         writeln!(TRANSACTIONS.lock().unwrap(), "{}", hash).unwrap();
                         break;
                     } else {
-//                        println!("{}", data);
+                        println!("{}", data);
                         self.sign(&WALLETS.lock().unwrap().next()).send();
                     }
                 }
                 Err(e) => {
-                    println!("{:?}", e);  // TODO Debug
+//                    println!("{:?}", e);  // TODO Debug
                     continue;
                 }
             }

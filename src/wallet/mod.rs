@@ -122,7 +122,7 @@ pub fn get_info(url: &str, address: &str) -> String {
     }
 }
 
-pub fn format_balance_output(address: &str) -> String {
+pub fn format_balance(address: &str) -> String {
     let balance = format_hex(&get_info(GET_BALANCE_API, address));
     format!("Wallet [{}] remains [{}] link token.", address, balance)
 }
@@ -133,7 +133,7 @@ pub fn get_all_balance() {
         let wallets = wallets.to_vec();
         let handle = thread::spawn(move || {
             for wallet in wallets {
-                println!("{}", format_balance_output(wallet.file_name().unwrap().to_str().unwrap()));
+                println!("{}", format_balance(wallet.file_name().unwrap().to_str().unwrap()));
             }
         });
 

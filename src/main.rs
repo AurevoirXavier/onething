@@ -5,6 +5,7 @@ extern crate emerald_core;
 extern crate lazy_static;
 extern crate md5;
 extern crate rand;
+extern crate regex;
 extern crate reqwest;
 extern crate serde;
 #[macro_use]

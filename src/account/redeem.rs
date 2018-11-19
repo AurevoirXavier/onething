@@ -72,7 +72,7 @@ impl<'a> Account<'a> {
                     Ok(mut resp) => resp.text().unwrap(),
                     Err(e) => {
                         if e.is_server_error() || e.is_client_error() { continue; } else {
-                            println!("{:?}", e);  // TODO Debug
+//                            println!("{:?}", e);  // TODO Debug
                             self.session = self.build_client();
                             continue;
                         }
