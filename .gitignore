@@ -12,4 +12,7 @@ wallets
 0x*
 accounts.txt
 accounts_backup.txt
+codes_*.txt
 detectors.txt
+orders_*.txt
+transactions_*.txt
