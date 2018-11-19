@@ -130,7 +130,7 @@ impl<'a> Transaction<'a> {
                     let data: Value = from_str(&data).unwrap();
                     if let Some(hash) = data.get("result") {
                         let hash = hash.as_str().unwrap();
-                        println!("Succeed, transaction hash: [{}]", hash);
+                        println!("Succeed, transaction hash: [{}].", hash);
                         writeln!(TRANSACTIONS.lock().unwrap(), "{}", hash).unwrap();
                         break;
                     } else {

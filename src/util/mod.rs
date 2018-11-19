@@ -41,12 +41,14 @@ pub fn format_kind<'a>(kind: u8) -> &'a str {
     }
 }
 
-pub fn format_hex(hex: &str) -> f64 { u128::from_str_radix(&hex[2..], 16).unwrap() as f64 / 10f64.powi(18) }
-
 pub fn format_balance(address: &str) -> String {
-    let balance = format_hex(&get_info(GET_BALANCE_API, address));
+    let balance = from_hex(&get_info(GET_BALANCE_API, address));
     format!("Wallet [{}] remains [{}] link token.", address, balance)
 }
+
+pub fn to_hex(decimal: &str) -> String { (decimal.parse::<f64>().unwrap() * 10f64.powi(18)).to_string() }
+
+pub fn from_hex(hex: &str) -> f64 { u128::from_str_radix(&hex[2..], 16).unwrap() as f64 / 10f64.powi(18) }
 
 pub fn save_export() {
     let mut kinds = [

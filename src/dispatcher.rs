@@ -11,6 +11,7 @@ use crate::{
     account::Account,
     detector::Detector,
     util::{
+        to_hex,
         format_balance,
         save_export,
         init::{ACCOUNTS, CONF, ORDERS, PROXIES},
@@ -82,7 +83,7 @@ pub fn dispatch_task(with_proxy: bool) {
         "--settle" => settle_accounts(),  // TODO
         "--transact" => {
             let (gas_limit, data) = if args.len() == 7 { (args[5].as_str(), args[6].as_str()) } else { ("0x186a0", "") };
-            Transaction::new(&args[3], &args[4], gas_limit, data)
+            Transaction::new(&args[3], &to_hex(&args[4]), gas_limit, data)
                 .sign(&PathBuf::from(&args[2]))
                 .send();
         }

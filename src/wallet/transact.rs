@@ -7,7 +7,10 @@ use std::{
 };
 
 // --- custom ---
-use crate::util::init::{CONF, GET_BALANCE_API, WALLETS};
+use crate::util::{
+    to_hex,
+    init::{CONF, GET_BALANCE_API, WALLETS},
+};
 use super::{
     format_balance,
     get_info,
@@ -46,7 +49,7 @@ pub fn dispatch_link_token() {
 
     let premier_wallet = get_premier_wallet();
     let from = premier_wallet.file_name().unwrap().to_str().unwrap();
-    let value = (value.trim().parse::<f64>().unwrap() * 10f64.powi(18)).to_string();
+    let value = to_hex(value.trim());
 
     for (i, to) in list_wallet("wallets").into_iter().enumerate() {
         if check_balance(from, &value, "0x186a0") {
