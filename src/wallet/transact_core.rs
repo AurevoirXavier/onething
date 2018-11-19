@@ -138,8 +138,8 @@ impl<'a> Transaction<'a> {
                         self.sign(&WALLETS.lock().unwrap().next()).send();
                     }
                 }
-                Err(e) => {
-//                    println!("{:?}", e);  // TODO Debug
+                Err(_e) => {
+//                    println!("{:?}", _e);  // TODO Debug
                     continue;
                 }
             }

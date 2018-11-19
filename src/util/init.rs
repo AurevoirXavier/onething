@@ -31,13 +31,7 @@ lazy_static! {
         accounts.lines().map(|line| line.to_owned()).collect()
     };
 
-    pub static ref CODES: Arc<Mutex<File>> = {
-        Arc::new(Mutex::new(OpenOptions::new()
-            .append(true)
-            .create(true)
-            .open(format!("codes_{}.txt", CONF.date))
-            .unwrap()))
-    };
+    pub static ref CODES: Arc<Mutex<Vec<(String, String)>>> = Arc::new(Mutex::new(vec![]));
 
     pub static ref DETECTORS: Arc<Mutex<IntoIter<String>>> = {
         let mut f = File::open("detectors.txt").unwrap();

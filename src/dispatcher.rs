@@ -1,7 +1,6 @@
 // --- std ---
 use std::{
     env,
-    io::Write,
     path::PathBuf,
     sync::{Arc, Mutex},
     thread,
@@ -12,12 +11,12 @@ use crate::{
     account::Account,
     detector::Detector,
     util::{
-        format_code,
-        init::{ACCOUNTS, CODES, CONF, ORDERS, PROXIES},
+        format_balance,
+        save_export,
+        init::{ACCOUNTS, CONF, ORDERS, PROXIES},
         proxy::Proxies,
     },
     wallet::{
-        format_balance,
         gen_wallet,
         get_all_balance,
         transact::{collect_link_token, dispatch_link_token, settle_accounts},
@@ -71,11 +70,10 @@ pub fn dispatch_task(with_proxy: bool) {
         "--collect" => collect_link_token(),
         "--export" => {
             dispatch_account(None, with_proxy);
-            CODES.lock().unwrap().flush().unwrap();
-            format_code();
+            save_export();
         }
         "--dispatch" => dispatch_link_token(),
-        "--format-code" => format_code(),
+        "--format-code" => save_export(),
         "--gen-wallet" => gen_wallet(),
         "--redeem" => Detector::new()
             .with_proxy()

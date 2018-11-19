@@ -10,7 +10,10 @@ use serde_json::{Value, from_str};
 
 // --- custom ---
 use crate::{
-    util::init::{ORDERS, SUBMIT_ORDER_API},
+    util::{
+        format_kind,
+        init::{ORDERS, SUBMIT_ORDER_API},
+    },
     wallet::transact::sign_transaction_with_random_wallet,
 };
 use super::Account;
@@ -103,7 +106,7 @@ impl<'a> Account<'a> {
                     }
                     // iRet: 0, sMsg: 成功
                     Some(0) => {
-                        println!("Kind: [{}], succeed.", kind);
+                        println!("Kind: [{}], succeed.", format_kind(kind));
                         save_and_pay_order(&self.username, &order["data"]);
                         return 0;
                     }

@@ -1,6 +1,5 @@
 // --- std ---
 use std::{
-    io::Write,
     thread::sleep,
     time::Duration,
 };
@@ -23,8 +22,8 @@ impl<'a> Account<'a> {
                 .form(&[("order_id", order_id)])
                 .send() {
                 Ok(mut resp) => resp.text().unwrap(),
-                Err(e) => {
-//                    println!("{:?}", e);
+                Err(_e) => {
+//                    println!("{:?}", _e);
                     self.session = self.build_client();
                     continue;
                 }
@@ -55,9 +54,8 @@ impl<'a> Account<'a> {
                     let goods_name = info["goods_name"].as_str().unwrap();
                     let code = info["code"].as_str().unwrap();
 
-                    let info = format!("[{}] -> [{}]", goods_name, code);
-                    println!("{}", info);
-                    writeln!(CODES.lock().unwrap(), "{}", info).unwrap();
+                    CODES.lock().unwrap().push((goods_name.to_string(), code.to_string()));
+                    println!("[{}] -> [{}]", goods_name, code);
                 }
                 // iRet: 403, sMsg: 请登录后再操作
                 Some(403) => {
@@ -85,8 +83,8 @@ impl<'a> Account<'a> {
                     ("status", "0")
                 ]).send() {
                 Ok(mut resp) => resp.text().unwrap(),
-                Err(e) => {
-//                    println!("{:?}", e);
+                Err(_e) => {
+//                    println!("{:?}", _e);
                     self.session = self.build_client();
                     continue;
                 }

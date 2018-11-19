@@ -19,8 +19,8 @@ use serde_json::{Value, from_str};
 // --- custom ---
 use crate::util::{
     default_client_builder,
-    format_hex,
-    init::{CONF, GET_BALANCE_API},
+    format_balance,
+    init::CONF,
 };
 
 pub struct Wallets {
@@ -120,11 +120,6 @@ pub fn get_info(url: &str, address: &str) -> String {
             } else { continue; }
         } else { continue; }
     }
-}
-
-pub fn format_balance(address: &str) -> String {
-    let balance = format_hex(&get_info(GET_BALANCE_API, address));
-    format!("Wallet [{}] remains [{}] link token.", address, balance)
 }
 
 pub fn get_all_balance() {
