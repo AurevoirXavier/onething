@@ -68,7 +68,7 @@ pub fn dispatch_task(with_proxy: bool) {
         "--balance" => if args.len() == 3 { println!("{}", format_balance_output(&args[2])); } else { get_all_balance(); }
         "--collect" => collect_link_token(),
         "--export" => dispatch_account(None, with_proxy),
-        "--dispatch" => dispatch_link_token(&args[2]),
+        "--dispatch" => dispatch_link_token(),
         "--gen-wallet" => gen_wallet(),
         "--redeem" => Detector::new()
             .with_proxy()

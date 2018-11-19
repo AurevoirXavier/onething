@@ -77,7 +77,8 @@ pub fn gen_wallet() {
     print!("Password (Enter for default password `123456789`): ");
     stdout().flush().unwrap();
     stdin().read_line(&mut password).unwrap();
-    if password.trim().is_empty() { password = "123456789".to_string(); }
+    let mut password = password.trim();
+    if password.is_empty() { password = "123456789"; }
 
     {
         let dir = Path::new("new-wallets");
@@ -86,7 +87,7 @@ pub fn gen_wallet() {
 
     for i in 1..=amount.trim().parse::<u64>().unwrap() {
         let key_file = KeyFile::new(
-            &password,
+            password,
             &KdfDepthLevel::Normal,
             None,
             None,

@@ -1,6 +1,7 @@
 // --- std ---
 use std::{
     u128,
+    io::{stdin, stdout, Write},
     thread::{self, sleep},
     time::Duration,
 };
@@ -37,19 +38,24 @@ pub fn sign_transaction_with_random_wallet<'a>(to: &'a str, value: &'a str, gas_
     }
 }
 
-pub fn dispatch_link_token(value: &str) {
+pub fn dispatch_link_token() {
+    let mut value = String::new();
+    print!("Amount: ");
+    stdout().flush().unwrap();
+    stdin().read_line(&mut value).unwrap();
+
     let premier_wallet = get_premier_wallet();
     let from = premier_wallet.file_name().unwrap().to_str().unwrap();
-    let value = (value.parse::<f64>().unwrap() * 10f64.powi(18)).to_string();
+    let value = (value.trim().parse::<f64>().unwrap() * 10f64.powi(18)).to_string();
 
-    for to in list_wallet("wallets") {
+    for (i, to) in list_wallet("wallets").into_iter().enumerate() {
         if check_balance(from, &value, "0x186a0") {
             let to = to.file_name().unwrap().to_str().unwrap();
             Transaction::new(to, &value, "0x186a0", "")
                 .sign(&premier_wallet)
                 .send();
 
-            println!("Wallet [{}] -> Wallet [{}].", from, to);
+            println!("[{}/50] Wallet [{}] -> Wallet [{}].", i, from, to);
         } else {
             println!("Wallet [{}]'s balance not enough.", from);
             break;
