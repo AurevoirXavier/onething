@@ -25,15 +25,14 @@ use crate::{
     },
 };
 
-fn execute_task(t_id: u8, accounts: &[String], proxy: Option<&Arc<Mutex<Proxies>>>, kind: Option<u8>) {
+fn execute_task(t_id: u8, accounts: &[String], proxies: Option<&Arc<Mutex<Proxies>>>, kind: Option<u8>) {
     for account in accounts.iter() {
         let account: Vec<&str> = account.split('=').collect();
         let username = account[0];
-        let password = account[1];
 
         println!("Account [{}] at [{}] thread.", username, t_id);
 
-        match Account::new(username, password, proxy).sign_in(false) {
+        match Account::new(username, account[1], proxies).sign_in(false) {
             Ok(account) => if let Some(kind) = kind { account.redeem(kind, false); } else { account.export(); }
             Err(e) => {
                 println!("{}", e);  // TODO Debug

@@ -101,7 +101,10 @@ impl<'a> Account<'a> {
         if let Some(i_ret) = order_list.get("iRet") {
             match i_ret.as_i64() {
                 // iRet: -1, sMsg: 操作太频繁，请稍后重试
+                // iRet: -1, sMsg: 违反商城用户协议，已加入黑名单
                 Some(-1) => {
+                    if order_list["sMsg"].as_str().unwrap().starts_with('违') { return true; }
+
                     sleep(Duration::from_secs(1));
                     self.pull_order_list(page)
                 }

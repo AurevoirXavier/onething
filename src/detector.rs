@@ -1,6 +1,7 @@
 // --- std ---
 use std::{
-    mem::swap,
+    fs::File,
+    io::Read,
     thread::{self, sleep},
     time::Duration,
 };
@@ -36,9 +37,19 @@ impl Detector {
     }
 
     pub fn detect(&mut self) {
+//        let detectors = {
+//            let mut f = File::open("detectors.txt").unwrap();
+//            let mut detectors = String::new();
+//            f.read_to_string(&mut detectors).unwrap();
+//
+//            detectors
+//                .lines()
+//                .map(|line| line.to_owned())
+//                .collect::<Vec<String>>()
+//        };
+
         let detector = DETECTORS.lock().unwrap().next().unwrap();
-        let detector: Vec<&str> = detector.split('=').collect();
-        let mut detector = Account::new(detector[0], detector[1], Some(&PROXIES));
+        let mut detector = Account::from_str(&detector).with_proxies(&PROXIES);
 
         if let Err(e) = detector.sign_in(true) {
             println!("{}", e);  // TODO Debug
@@ -59,17 +70,13 @@ impl Detector {
                             println!("[{}] detected.", kind);
                             dispatch_account(Some(kind), proxy);
                             println!("[{}] detecting thread end.", kind);
-                            break;
                         }
                         7 => if let Some(new_detector) = DETECTORS.lock().unwrap().next() {
-                            let new_detector: Vec<&str> = new_detector.split('=').collect();
-                            swap(
-                                &mut detector.session,
-                                &mut Account::new(new_detector[0], new_detector[1], Some(&PROXIES))
-                                    .sign_in(false)
-                                    .unwrap()
-                                    .session,
-                            );
+                            detector = Account::from_str(&new_detector).with_proxies(&PROXIES);
+                            if let Err(e) = detector.sign_in(true) {
+                                println!("{}", e);  // TODO Debug
+                                continue;
+                            }
                         } else { break; }
                         _ => ()
                     }

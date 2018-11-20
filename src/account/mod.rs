@@ -27,4 +27,20 @@ impl<'a> Account<'a> {
             proxies,
         }
     }
+
+    pub fn from_str(info: &str) -> Account<'a> {
+        let account: Vec<&str> = info.split('=').collect();
+        Account {
+            username: account[0].to_owned(),
+            password: account[1].to_owned(),
+            session: reqwest::Client::new(),
+            cookie: reqwest::header::HeaderMap::new(),
+            proxies: None,
+        }
+    }
+
+    pub fn with_proxies(mut self, proxies: &'a Arc<Mutex<Proxies>>) -> Self {
+        self.proxies = Some(proxies);
+        self
+    }
 }

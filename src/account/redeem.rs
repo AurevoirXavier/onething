@@ -83,7 +83,7 @@ impl<'a> Account<'a> {
                 };
 
 //                println!("{}", payload);  // TODO Debug
-//                println!("{}", data);  // TODO Debug
+                println!("{}", data);  // TODO Debug
 
                 if data.contains('<') {
                     self.session = self.build_client();
@@ -99,8 +99,11 @@ impl<'a> Account<'a> {
                 match i_ret.as_i64() {
                     // iRet: -1, sMsg: 提交太频繁，请稍后再试
                     // iRet: -1, sMsg: 合约调用失败，请重试
+                    // iRet: -1, sMsg: 违反商城用户协议，已加入黑名单
                     Some(-1) => {
+                        if order["sMsg"].as_str().unwrap().starts_with('违') { return 7; }
                         if detect { return 0; }
+
                         sleep(Duration::from_secs(1));
                         continue;
                     }
