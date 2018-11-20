@@ -83,7 +83,7 @@ impl<'a> Account<'a> {
                 };
 
 //                println!("{}", payload);  // TODO Debug
-                println!("{}", data);  // TODO Debug
+//                println!("{}", data);  // TODO Debug
 
                 if data.contains('<') {
                     self.session = self.build_client();
@@ -94,7 +94,7 @@ impl<'a> Account<'a> {
             }
 
             let order: Value = from_str(&data).unwrap();
-//            println!("{}", order);  // TODO Debug
+            println!("{}", order);  // TODO Verbose info
             if let Some(i_ret) = order.get("iRet") {
                 match i_ret.as_i64() {
                     // iRet: -1, sMsg: 提交太频繁，请稍后再试

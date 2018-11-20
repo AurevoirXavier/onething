@@ -73,7 +73,6 @@ pub fn dispatch_task(with_proxy: bool) {
             save_export();
         }
         "--dispatch" => dispatch_link_token(),
-        "--format-code" => save_export(),
         "--gen-wallet" => gen_wallet(),
         "--redeem" => Detector::new()
             .with_proxy()

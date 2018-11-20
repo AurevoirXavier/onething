@@ -3,7 +3,6 @@ use std::{
     fs::{File, OpenOptions},
     io::prelude::*,
     sync::{Arc, Mutex},
-    vec::IntoIter,
 };
 
 // --- external ---
@@ -32,20 +31,6 @@ lazy_static! {
     };
 
     pub static ref CODES: Arc<Mutex<Vec<(String, String)>>> = Arc::new(Mutex::new(vec![]));
-
-    pub static ref DETECTORS: Arc<Mutex<IntoIter<String>>> = {
-        let mut f = File::open("detectors.txt").unwrap();
-        let mut detectors = String::new();
-        f.read_to_string(&mut detectors).unwrap();
-
-        Arc::new(Mutex::new(
-            detectors
-                .lines()
-                .map(|line| line.to_owned())
-                .collect::<Vec<String>>()
-                .into_iter()
-        ))
-    };
 
     pub static ref ORDERS: Arc<Mutex<File>> = {
         Arc::new(Mutex::new(OpenOptions::new()

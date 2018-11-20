@@ -2,15 +2,14 @@
 use std::{
     fs::File,
     io::Read,
-    thread::{self, sleep},
-    time::Duration,
+    thread,
 };
 
 // --- custom ---
 use crate::{
     account::Account,
     dispatcher::dispatch_account,
-    util::init::{DETECTORS, PROXIES},
+    util::init::PROXIES,
 };
 
 pub struct Detector {
@@ -36,52 +35,57 @@ impl Detector {
         self
     }
 
-    pub fn detect(&mut self) {
-//        let detectors = {
-//            let mut f = File::open("detectors.txt").unwrap();
-//            let mut detectors = String::new();
-//            f.read_to_string(&mut detectors).unwrap();
-//
-//            detectors
-//                .lines()
-//                .map(|line| line.to_owned())
-//                .collect::<Vec<String>>()
-//        };
+    fn try_sign_in<'a>(detectors: &Vec<String>, index: &mut usize) -> Option<Account<'a>> {
+        loop {
+            if index.to_owned() == detectors.len() { return None; }
 
-        let detector = DETECTORS.lock().unwrap().next().unwrap();
-        let mut detector = Account::from_str(&detector).with_proxies(&PROXIES);
+            let mut detector = Account::from_str(&detectors[index.to_owned()]);
+            if let Err(_e) = detector.sign_in(false) {
+//                println!("{}", _e);  // TODO Debug
+                *index += 1;
+                continue;
+            }
 
-        if let Err(e) = detector.sign_in(true) {
-            println!("{}", e);  // TODO Debug
-            return;
+            return Some(detector);
         }
+    }
+
+    pub fn detect(&mut self) {
+        let detectors = {
+            let mut f = File::open("detectors.txt").unwrap();
+            let mut detectors = String::new();
+            f.read_to_string(&mut detectors).unwrap();
+
+            detectors
+                .lines()
+                .map(|line| line.to_owned())
+                .collect::<Vec<String>>()
+        };
 
         let mut handles = vec![];
         for &kind in self.kinds.iter() {
+            let mut index = 0;
             let proxy = self.proxy.clone();
-            let mut detector = detector.clone();
+
+            let mut detector = if let Some(detector) = Detector::try_sign_in(&detectors, &mut index) { detector.with_proxies(&PROXIES) } else { continue; };
             detector.session = detector.build_client();
 
+            let detectors = detectors.clone();
             let handle = thread::spawn(move || {
                 loop {
                     println!("Detecting [{}].", kind);
+
                     match detector.redeem(kind, true) {
                         0 => {
                             println!("[{}] detected.", kind);
                             dispatch_account(Some(kind), proxy);
                             println!("[{}] detecting thread end.", kind);
                         }
-                        7 => if let Some(new_detector) = DETECTORS.lock().unwrap().next() {
-                            detector = Account::from_str(&new_detector).with_proxies(&PROXIES);
-                            if let Err(e) = detector.sign_in(true) {
-                                println!("{}", e);  // TODO Debug
-                                continue;
-                            }
-                        } else { break; }
+                        7 => detector = if let Some(detector) = Detector::try_sign_in(&detectors, &mut index) { detector.with_proxies(&PROXIES) } else { break; },
                         _ => ()
                     }
 
-                    sleep(Duration::from_secs(1));
+                    index += 1;
                 }
             });
 
