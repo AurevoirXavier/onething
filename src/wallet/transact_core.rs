@@ -124,7 +124,7 @@ impl<'a> Transaction<'a> {
                 })).send() {
                 Ok(mut resp) => {
                     let data = resp.text().unwrap();
-//                println!("{}", data);  // TODO Debug
+//                    println!("{}", data);  // TODO Debug
                     if data.contains('<') { continue; }
 
                     let data: Value = from_str(&data).unwrap();

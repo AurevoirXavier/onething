@@ -58,9 +58,7 @@ fn save_and_pay_order(account: &str, data: &Value) {
 
     writeln!(ORDERS.lock().unwrap(), "{}-{}-{}-{}-{}", account, to, value, gas_limit, data).unwrap();
 
-    let handle = thread::spawn(move || { sign_transaction_with_random_wallet(&to, &value, &gas_limit, &data).send(); });
-
-    handle.join().unwrap();
+    thread::spawn(move || { sign_transaction_with_random_wallet(&to, &value, &gas_limit, &data).send(); });
 }
 
 impl<'a> Account<'a> {

@@ -61,7 +61,9 @@ impl<'a> Account<'a> {
                 Some(403) => {
                     match self.sign_in(true) {
                         Ok(account) => account.export(),
-                        Err(e) => println!("{}", e),  // TODO Debug
+                        Err(_e) => {
+//                            println!("{}", _e)  // TODO Debug
+                        },
                     }
                 }
                 // Unhandled status code
@@ -118,9 +120,9 @@ impl<'a> Account<'a> {
 //                        println!("{}", order_id);  // TODO Debug
 
                         let order_id = order_id.as_str().unwrap();
-                        if order_id[1..9] != CONF.date { return true; }
 
-                        self.pull_order(order_id);
+                        let date = &order_id[1..9];
+                        if date == CONF.date { self.pull_order(order_id); } else if date.parse::<u32>().unwrap() < CONF.date.parse::<u32>().unwrap() { return true; }
                     }
 
                     if data["next_page"].as_u64().unwrap() == 0 { true } else { false }
@@ -129,7 +131,9 @@ impl<'a> Account<'a> {
                 Some(403) => {
                     match self.sign_in(true) {
                         Ok(account) => account.export(),
-                        Err(e) => println!("{}", e),  // TODO Debug
+                        Err(_e) => {
+//                            println!("{}", _e)  // TODO Debug
+                        },
                     }
 
                     true

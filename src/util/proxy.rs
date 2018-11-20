@@ -14,16 +14,22 @@ impl Proxies {
 
     pub fn update(&mut self, api: &str) {
         loop {
-            if let Ok(mut resp) = default_client_builder(0)
+            match default_client_builder(0)
                 .build()
                 .unwrap()
                 .get(api)
                 .send() {
-                let data = resp.text().unwrap();
+                Ok(mut resp) => {
+                    let data = resp.text().unwrap();
 //                println!("{}", data);  // TODO Debug
-                self.0 = data.lines().map(|line| line.to_owned()).collect();
+                    self.0 = data.lines().map(|line| line.to_owned()).collect();
 
-                return;
+                    return;
+                }
+                Err(_e) => {
+//                    println!("{:?}", _e);  // TODO Debug
+                    continue;
+                }
             }
         }
     }

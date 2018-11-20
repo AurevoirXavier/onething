@@ -2,7 +2,8 @@
 use std::{
     fs::File,
     io::Read,
-    thread,
+    thread::{self, sleep},
+    time::Duration,
 };
 
 // --- custom ---
@@ -79,13 +80,17 @@ impl Detector {
                         0 => {
                             println!("[{}] detected.", kind);
                             dispatch_account(Some(kind), proxy);
+                            index += 1;
                             println!("[{}] detecting thread end.", kind);
                         }
-                        7 => detector = if let Some(detector) = Detector::try_sign_in(&detectors, &mut index) { detector.with_proxies(&PROXIES) } else { break; },
+                        7 => detector = {
+                            index += 1;
+                            if let Some(detector) = Detector::try_sign_in(&detectors, &mut index) { detector.with_proxies(&PROXIES) } else { break; }
+                        },
                         _ => ()
                     }
 
-                    index += 1;
+                    sleep(Duration::from_secs(1));
                 }
             });
 
