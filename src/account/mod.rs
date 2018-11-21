@@ -3,7 +3,7 @@ pub mod redeem;
 mod sign_in;
 
 // --- std ---
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 
 // --- custom ---
 use crate::util::proxy::Proxies;
@@ -14,11 +14,11 @@ pub struct Account<'a> {
     password: String,
     pub session: reqwest::Client,
     cookie: reqwest::header::HeaderMap,
-    pub proxies: Option<&'a Arc<Mutex<Proxies>>>,
+    pub proxies: Option<&'a Mutex<Proxies>>,
 }
 
 impl<'a> Account<'a> {
-    pub fn new(username: &str, password: &str, proxies: Option<&'a Arc<Mutex<Proxies>>>) -> Account<'a> {
+    pub fn new(username: &str, password: &str, proxies: Option<&'a Mutex<Proxies>>) -> Account<'a> {
         Account {
             username: username.to_owned(),
             password: password.to_owned(),
@@ -39,7 +39,7 @@ impl<'a> Account<'a> {
         }
     }
 
-    pub fn with_proxies(mut self, proxies: &'a Arc<Mutex<Proxies>>) -> Self {
+    pub fn with_proxies(mut self, proxies: &'a Mutex<Proxies>) -> Self {
         self.proxies = Some(proxies);
         self
     }

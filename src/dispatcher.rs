@@ -2,7 +2,7 @@
 use std::{
     env,
     path::PathBuf,
-    sync::{Arc, Mutex},
+    sync::Mutex,
     thread,
 };
 
@@ -25,7 +25,7 @@ use crate::{
     },
 };
 
-fn execute_task(t_id: u8, accounts: &[String], proxies: Option<&Arc<Mutex<Proxies>>>, kind: Option<u8>) {
+fn execute_task(t_id: u8, accounts: &[String], proxies: Option<&Mutex<Proxies>>, kind: Option<u8>) {
     for account in accounts.iter() {
         let account: Vec<&str> = account.split('=').collect();
         let username = account[0];
@@ -47,8 +47,7 @@ pub fn dispatch_account(kind: Option<u8>, with_proxy: bool) {
         let mut handles = vec![];
         for (i, accounts) in ACCOUNTS.chunks(CONF.account_per_thread).enumerate() {
             let handle = if with_proxy {
-                let proxies = Arc::clone(&PROXIES);
-                thread::spawn(move || { execute_task(i as u8 + 1, accounts, Some(&proxies), kind); })
+                thread::spawn(move || { execute_task(i as u8 + 1, accounts, Some(&PROXIES), kind); })
             } else {
                 thread::spawn(move || { execute_task(i as u8 + 1, accounts, None, kind); })
             };

@@ -41,7 +41,7 @@ lazy_static! {
             .unwrap()))
     };
 
-    pub static ref PROXIES: Arc<Mutex<Proxies>> = Arc::new(Mutex::new(Proxies::new()));
+    pub static ref PROXIES: Mutex<Proxies> = Mutex::new(Proxies::new());
 
     pub static ref TRANSACTIONS: Arc<Mutex<File>> = {
         Arc::new(Mutex::new(OpenOptions::new()

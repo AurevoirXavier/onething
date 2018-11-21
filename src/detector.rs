@@ -69,12 +69,11 @@ impl Detector {
 
         let mut handles = vec![];
         for &kind in self.kinds.iter() {
+            let mut index = 0;
             let mut detector = if let Some(detector) = Detector::try_sign_in(&detectors, &mut index) { detector.with_proxies(&PROXIES) } else { continue; };
             detector.session = detector.build_client();
 
             let detectors = Arc::clone(&detectors);
-            let mut index = 0;
-
             let handle = thread::spawn(move || {
                 loop {
                     println!("Detecting [{}].", kind);
