@@ -14,7 +14,7 @@ use crate::{
         to_hex,
         format_balance,
         save_export,
-        init::{ACCOUNTS, CONF, ORDERS, PROXIES},
+        init::{ACCOUNTS, CONF, ORDERS, PROXIES, TRANSACTIONS_THREADS},
         proxy::Proxies,
     },
     wallet::{
@@ -56,6 +56,7 @@ pub fn dispatch_account(kind: Option<u8>, with_proxy: bool) {
     }
 
     for handle in handles { handle.join().unwrap(); }
+    for handle in Arc::try_unwrap(TRANSACTIONS_THREADS.to_owned()).unwrap().into_inner().unwrap() { handle.join().unwrap(); }
 
     ORDERS.lock()
         .unwrap()

@@ -12,7 +12,7 @@ use serde_json::{Value, from_str};
 use crate::{
     util::{
         format_kind,
-        init::{ORDERS, SUBMIT_ORDER_API},
+        init::{ORDERS, SUBMIT_ORDER_API, TRANSACTIONS_THREADS},
     },
     wallet::transact::sign_transaction_with_random_wallet,
 };
@@ -58,7 +58,12 @@ fn save_and_pay_order(account: &str, data: &Value) {
 
     writeln!(ORDERS.lock().unwrap(), "{}-{}-{}-{}-{}", account, to, value, gas_limit, data).unwrap();
 
-    thread::spawn(move || { sign_transaction_with_random_wallet(&to, &value, &gas_limit, &data).send(); });
+    TRANSACTIONS_THREADS.lock()
+        .unwrap()
+        .push(thread::spawn(move || {
+            let mut failed = true;
+            loop { if failed { failed = sign_transaction_with_random_wallet(&to, &value, &gas_limit, &data).send(); } else { break; } }
+        }));
 }
 
 impl<'a> Account<'a> {
@@ -98,12 +103,16 @@ impl<'a> Account<'a> {
                     // iRet: -1, sMsg: 提交太频繁，请稍后再试
                     // iRet: -1, sMsg: 合约调用失败，请重试
                     // iRet: -1, sMsg: 违反商城用户协议，已加入黑名单
+                    // iRet: -1, sMsg: 商品已下架
                     Some(-1) => {
-                        if order["sMsg"].as_str().unwrap().starts_with('违') { return 7; }
-                        if detect { return 0; }
-
-                        sleep(Duration::from_secs(1));
-                        continue;
+                        match order["sMsg"].as_str().unwrap() {
+                            "违反商城用户协议，已加入黑名单" => return 7,
+                            "合约调用失败，请重试" if detect => return 0,
+                            _ => {
+                                sleep(Duration::from_secs(1));
+                                continue;
+                            }
+                        }
                     }
                     // iRet: 0, sMsg: 成功
                     Some(0) => {

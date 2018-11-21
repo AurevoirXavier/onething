@@ -18,7 +18,7 @@ use serde_json::{Value, from_str};
 // --- custom ---
 use crate::util::{
     default_client_builder,
-    init::{CONF, GET_BALANCE_API, GET_TRANSACTION_COUNT_API, SEND_RAW_TRANSACTION_API, TRANSACTIONS, TRANSACTION_HEADERS, WALLETS},
+    init::{CONF, GET_BALANCE_API, GET_TRANSACTION_COUNT_API, SEND_RAW_TRANSACTION_API, TRANSACTIONS, TRANSACTION_HEADERS},
 };
 use super::get_info;
 
@@ -108,7 +108,7 @@ impl<'a> Transaction<'a> {
         self
     }
 
-    pub fn send(&mut self) {
+    pub fn send(&mut self) -> bool{
         loop {
             match default_client_builder(10)
                 .default_headers(TRANSACTION_HEADERS.clone())
@@ -132,10 +132,10 @@ impl<'a> Transaction<'a> {
                         let hash = hash.as_str().unwrap();
                         println!("Succeed, transaction hash: [{}].", hash);
                         writeln!(TRANSACTIONS.lock().unwrap(), "{}", hash).unwrap();
-                        break;
+                        return false;
                     } else {
                         println!("{}", data);
-                        self.sign(&WALLETS.lock().unwrap().next()).send();
+                        return true;
                     }
                 }
                 Err(_e) => {

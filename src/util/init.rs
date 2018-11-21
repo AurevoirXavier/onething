@@ -3,6 +3,7 @@ use std::{
     fs::{File, OpenOptions},
     io::prelude::*,
     sync::{Arc, Mutex},
+    thread::JoinHandle,
 };
 
 // --- external ---
@@ -56,6 +57,8 @@ lazy_static! {
 
         headers
     };
+
+    pub static ref TRANSACTIONS_THREADS: Arc<Mutex<Vec<JoinHandle<()>>>> = Arc::new(Mutex::new(vec![]));
 
     pub static ref WALLETS: Arc<Mutex<Wallets>> = Arc::new(Mutex::new(Wallets::new()));
 }

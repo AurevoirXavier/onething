@@ -7,6 +7,6 @@
     "wallet_per_thread": 1,
     "export_with_proxy": true,
     "kinds": [
-        10
+        1
     ]
 }
