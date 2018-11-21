@@ -2,6 +2,7 @@
 use std::{
     fs::File,
     io::Read,
+    sync::Arc,
     thread::{self, sleep},
     time::Duration,
 };
@@ -52,26 +53,28 @@ impl Detector {
     }
 
     pub fn detect(&mut self) {
+        let proxy = self.proxy;
+
         let detectors = {
             let mut f = File::open("detectors.txt").unwrap();
             let mut detectors = String::new();
             f.read_to_string(&mut detectors).unwrap();
 
-            detectors
+            Arc::new(detectors
                 .lines()
                 .map(|line| line.to_owned())
-                .collect::<Vec<String>>()
+                .collect::<Vec<String>>())
         };
+
 
         let mut handles = vec![];
         for &kind in self.kinds.iter() {
-            let mut index = 0;
-            let proxy = self.proxy.clone();
-
             let mut detector = if let Some(detector) = Detector::try_sign_in(&detectors, &mut index) { detector.with_proxies(&PROXIES) } else { continue; };
             detector.session = detector.build_client();
 
-            let detectors = detectors.clone();
+            let detectors = Arc::clone(&detectors);
+            let mut index = 0;
+
             let handle = thread::spawn(move || {
                 loop {
                     println!("Detecting [{}].", kind);

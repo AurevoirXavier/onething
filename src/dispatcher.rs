@@ -43,22 +43,26 @@ fn execute_task(t_id: u8, accounts: &[String], proxies: Option<&Arc<Mutex<Proxie
 }
 
 pub fn dispatch_account(kind: Option<u8>, with_proxy: bool) {
-    let mut handles = vec![];
-    for (i, accounts) in ACCOUNTS.chunks(CONF.account_per_thread).enumerate() {
-        let handle = if with_proxy {
-            let proxies = Arc::clone(&PROXIES);
-            thread::spawn(move || { execute_task(i as u8 + 1, accounts, Some(&proxies), kind); })
-        } else {
-            thread::spawn(move || { execute_task(i as u8 + 1, accounts, None, kind); })
-        };
+    {
+        let mut handles = vec![];
+        for (i, accounts) in ACCOUNTS.chunks(CONF.account_per_thread).enumerate() {
+            let handle = if with_proxy {
+                let proxies = Arc::clone(&PROXIES);
+                thread::spawn(move || { execute_task(i as u8 + 1, accounts, Some(&proxies), kind); })
+            } else {
+                thread::spawn(move || { execute_task(i as u8 + 1, accounts, None, kind); })
+            };
 
-        handles.push(handle);
+            handles.push(handle);
+        }
+
+        for handle in handles { handle.join().unwrap(); }
     }
 
-    for handle in handles { handle.join().unwrap(); }
-
-    let mut transaction_threads = TRANSACTION_THREADS.lock().unwrap();
-    while let Some(transaction_thread) = transaction_threads.pop() { transaction_thread.join().unwrap(); }
+    {
+        let mut transaction_threads = TRANSACTION_THREADS.lock().unwrap();
+        while let Some(transaction_thread) = transaction_threads.pop() { transaction_thread.join().unwrap(); }
+    }
 
     ORDERS.lock()
         .unwrap()
