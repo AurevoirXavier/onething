@@ -1,10 +1,11 @@
 {
     "proxy_pool_api": "http://api3.xiguadaili.com/ip/?tid=555538032022318&num=1000&category=2",
     "transaction_proxy": "http://127.0.0.1:1087",
-    "date": "20181119",
+    "date": "20181121",
     "request_timeout": 3,
     "account_per_thread": 4,
     "wallet_per_thread": 1,
+    "transaction_per_thread": 4,
     "export_with_proxy": true,
     "kinds": [
         1

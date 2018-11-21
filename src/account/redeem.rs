@@ -12,7 +12,7 @@ use serde_json::{Value, from_str};
 use crate::{
     util::{
         format_kind,
-        init::{ORDERS, SUBMIT_ORDER_API, TRANSACTIONS_THREADS},
+        init::{ORDERS, SUBMIT_ORDER_API, TRANSACTION_THREADS},
     },
     wallet::transact::sign_transaction_with_random_wallet,
 };
@@ -56,9 +56,9 @@ fn save_and_pay_order(account: &str, data: &Value) {
     let gas_limit = format!("{:#x}", data["gas_limit"].as_u64().unwrap());
     let data = data["data"].as_str().unwrap().to_owned();
 
-    writeln!(ORDERS.lock().unwrap(), "{}-{}-{}-{}-{}", account, to, value, gas_limit, data).unwrap();
+    writeln!(ORDERS.lock().unwrap(), "{}-{}-{}-{}-{}", to, value, gas_limit, data, account).unwrap();
 
-    TRANSACTIONS_THREADS.lock()
+    TRANSACTION_THREADS.lock()
         .unwrap()
         .push(thread::spawn(move || {
             let mut failed = true;

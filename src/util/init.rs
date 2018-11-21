@@ -58,7 +58,7 @@ lazy_static! {
         headers
     };
 
-    pub static ref TRANSACTIONS_THREADS: Arc<Mutex<Vec<JoinHandle<()>>>> = Arc::new(Mutex::new(vec![]));
+    pub static ref TRANSACTION_THREADS: Mutex<Vec<JoinHandle<()>>> = Mutex::new(vec![]);
 
     pub static ref WALLETS: Arc<Mutex<Wallets>> = Arc::new(Mutex::new(Wallets::new()));
 }
@@ -71,6 +71,7 @@ pub struct Conf {
     pub request_timeout: u64,
     pub account_per_thread: usize,
     pub wallet_per_thread: usize,
+    pub transaction_per_thread: usize,
     pub export_with_proxy: bool,
     pub kinds: Vec<u8>,
 }

@@ -117,21 +117,26 @@ pub fn collect_link_token() {
 pub fn settle_accounts() {
     let orders = {
         let mut orders = String::new();
-        let mut f = File::open(&format!("orders_{}", CONF.date)).unwrap();
+        let mut f = File::open(&format!("orders_{}.txt", CONF.date)).unwrap();
         f.read_to_string(&mut orders).unwrap();
 
         orders
     };
 
     let mut handles = vec![];
-    for order in orders.lines() {
-        let mut info = order.split('-');
-        let to = info.next().unwrap().to_owned();
-        let value = info.next().unwrap().to_owned();
-        let gas_limit = info.next().unwrap().to_owned();
-        let data = info.next().unwrap().to_owned();
+    for orders in orders.lines().map(|line| line.to_owned()).collect::<Vec<String>>().chunks(CONF.transaction_per_thread) {
+        let orders = orders.to_vec();
+        let handle = thread::spawn(move || {
+            for order in orders {
+                let mut info = order.split('-');
+                let to = info.next().unwrap().to_owned();
+                let value = info.next().unwrap().to_owned();
+                let gas_limit = info.next().unwrap().to_owned();
+                let data = info.next().unwrap().to_owned();
 
-        let handle = thread::spawn(move || { sign_transaction_with_random_wallet(&to, &value, &gas_limit, &data).send(); });
+                sign_transaction_with_random_wallet(&to, &value, &gas_limit, &data).send();
+            }
+        });
 
         handles.push(handle);
     }
