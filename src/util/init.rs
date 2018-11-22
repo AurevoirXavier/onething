@@ -2,7 +2,7 @@
 use std::{
     fs::{File, OpenOptions},
     io::prelude::*,
-    sync::{Arc, Mutex},
+    sync::Mutex,
     thread::JoinHandle,
 };
 
@@ -31,24 +31,24 @@ lazy_static! {
         accounts.lines().map(|line| line.to_owned()).collect()
     };
 
-    pub static ref CODES: Arc<Mutex<Vec<(String, String)>>> = Arc::new(Mutex::new(vec![]));
+    pub static ref CODES: Mutex<Vec<(String, String)>> = Mutex::new(vec![]);
 
-    pub static ref ORDERS: Arc<Mutex<File>> = {
-        Arc::new(Mutex::new(OpenOptions::new()
+    pub static ref ORDERS: Mutex<File> = {
+        Mutex::new(OpenOptions::new()
             .append(true)
             .create(true)
             .open(format!("orders_{}.txt", CONF.date))
-            .unwrap()))
+            .unwrap())
     };
 
     pub static ref PROXIES: Mutex<Proxies> = Mutex::new(Proxies::new());
 
-    pub static ref TRANSACTIONS: Arc<Mutex<File>> = {
-        Arc::new(Mutex::new(OpenOptions::new()
+    pub static ref TRANSACTIONS: Mutex<File> = {
+        Mutex::new(OpenOptions::new()
             .append(true)
             .create(true)
             .open(format!("transactions_{}.txt", CONF.date))
-            .unwrap()))
+            .unwrap())
     };
 
     pub static ref TRANSACTION_HEADERS: HeaderMap = {
@@ -60,7 +60,7 @@ lazy_static! {
 
     pub static ref TRANSACTION_THREADS: Mutex<Vec<JoinHandle<()>>> = Mutex::new(vec![]);
 
-    pub static ref WALLETS: Arc<Mutex<Wallets>> = Arc::new(Mutex::new(Wallets::new()));
+    pub static ref WALLETS: Mutex<Wallets> = Mutex::new(Wallets::new());
 }
 
 #[derive(Deserialize)]

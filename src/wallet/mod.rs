@@ -125,7 +125,7 @@ pub fn get_info(url: &str, address: &str) -> String {
 pub fn get_all_balance() {
     let mut handles = vec![];
     for wallets in list_wallet("wallets").chunks(CONF.wallet_per_thread) {
-        let wallets = wallets.to_vec();
+        let wallets = wallets.to_owned();
         let handle = thread::spawn(move || {
             for wallet in wallets {
                 println!("{}", format_balance(wallet.file_name().unwrap().to_str().unwrap()));
