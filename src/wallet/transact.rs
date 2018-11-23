@@ -125,7 +125,7 @@ pub fn settle_accounts() {
 
     let mut handles = vec![];
     for orders in orders.lines().map(|line| line.to_owned()).collect::<Vec<String>>().chunks(CONF.transaction_per_thread) {
-        let orders = orders.to_owned();
+        let orders = orders.to_vec();
         let handle = thread::spawn(move || {
             for order in orders {
                 let mut info = order.split('-');

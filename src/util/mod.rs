@@ -10,7 +10,7 @@ use std::{
 };
 
 // --- external ---
-use reqwest::{Client, ClientBuilder};
+use reqwest::ClientBuilder;
 
 // --- custom ---
 use crate::wallet::get_info;
@@ -18,7 +18,7 @@ use self::init::{CODES, CONF, GET_BALANCE_API};
 
 pub fn default_client_builder(timeout: u64) -> ClientBuilder {
     let timeout = if timeout == 0 { CONF.request_timeout } else { timeout };
-    Client::builder()
+    ClientBuilder::new()
         .danger_accept_invalid_certs(true)
         .danger_accept_invalid_hostnames(true)
         .gzip(true)
