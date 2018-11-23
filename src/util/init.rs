@@ -72,7 +72,9 @@ pub struct Conf {
     pub account_per_thread: usize,
     pub wallet_per_thread: usize,
     pub transaction_per_thread: usize,
+    pub detect: bool,
     pub export_with_proxy: bool,
+    pub redeem_with_proxy: bool,
     pub kinds: Vec<u8>,
 }
 

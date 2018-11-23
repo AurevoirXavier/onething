@@ -69,21 +69,28 @@ pub fn dispatch_account(kind: Option<u8>, with_proxy: bool) {
         .unwrap();
 }
 
-pub fn dispatch_task(with_proxy: bool) {
+fn redeem() {
+    let mut handles = vec![];
+    for &kind in &CONF.kinds {
+        let handle = thread::spawn(move || { dispatch_account(Some(kind), CONF.redeem_with_proxy); });
+        handles.push(handle);
+    }
+
+    for handle in handles { handle.join().unwrap(); }
+}
+
+pub fn dispatch_task() {
     let args: Vec<String> = env::args().collect();
     match args[1].as_str() {
         "--balance" => if args.len() == 3 { println!("{}", format_balance(&args[2])); } else { get_all_balance(); }
         "--collect" => collect_link_token(),
         "--export" => {
-            dispatch_account(None, with_proxy);
+            dispatch_account(None, CONF.export_with_proxy);
             save_export();
         }
         "--dispatch" => dispatch_link_token(),
         "--gen-wallet" => gen_wallet(),
-        "--redeem" => Detector::new()
-            .with_proxy()
-            .with_kinds(&CONF.kinds)
-            .detect(),
+        "--redeem" => if CONF.detect { Detector::new().with_proxy(CONF.redeem_with_proxy).with_kinds(&CONF.kinds).detect(); } else { redeem(); },
         "--settle" => settle_accounts(),
         "--transact" => {
             let (gas_limit, data) = if args.len() == 7 { (args[5].as_str(), args[6].as_str()) } else { ("0x186a0", "") };

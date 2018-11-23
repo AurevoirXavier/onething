@@ -27,13 +27,13 @@ impl Detector {
         }
     }
 
-    pub fn with_kinds(&mut self, kinds: &[u8]) -> &mut Self {
+    pub fn with_kinds(mut self, kinds: &[u8]) -> Self {
         self.kinds = kinds.to_owned();
         self
     }
 
-    pub fn with_proxy(&mut self) -> &mut Self {
-        self.proxy = true;
+    pub fn with_proxy(mut self, proxy: bool) -> Self {
+        self.proxy = proxy;
         self
     }
 
