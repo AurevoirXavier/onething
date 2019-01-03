@@ -38,7 +38,7 @@ conf.json 说明:
 }
 ```
 
-- `proxy_pool_api`: ip 池地址返回格式需为文本格式，抢购必备不解释
+- `proxy_pool_api`: ip 池地址，返回格式需为文本格式，抢购必备不解释
 - `transaction_proxy`: 交易代理地址，一般填写 ss 代理地址，格式 http://127.0.0.1:1080，因为交易需要翻墙
 - `date`: 日期，格式 20181126
 - `request_timeout`: 请求超时时间，由于代理池质量各不相同，设置超时上线
