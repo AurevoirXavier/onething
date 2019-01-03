@@ -44,7 +44,7 @@ impl<'a> Transaction<'a> {
         }
     }
 
-    pub fn sign(&mut self, wallet: &PathBuf) -> &mut Self {
+    pub fn sign(&mut self, wallet: &PathBuf, password: &str) -> &mut Self {
         let nonce = {
             let from = wallet.file_name().unwrap().to_str().unwrap();
             self.from = from.to_owned();
@@ -85,7 +85,7 @@ impl<'a> Transaction<'a> {
 
                 KeyFile::decode(key_file)
                     .unwrap()
-                    .decrypt_key("123456789")
+                    .decrypt_key(password)
                     .unwrap()
                     .to_hex()
             };

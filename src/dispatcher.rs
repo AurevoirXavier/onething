@@ -93,9 +93,9 @@ pub fn dispatch_task() {
         "--redeem" => if CONF.detect { Detector::new().with_proxy(CONF.redeem_with_proxy).with_kinds(&CONF.kinds).detect(); } else { redeem(); },
         "--settle" => settle_accounts(),
         "--transact" => {
-            let (gas_limit, data) = if args.len() == 7 { (args[5].as_str(), args[6].as_str()) } else { ("0x186a0", "") };
-            Transaction::new(&args[3], &to_hex(&args[4]), gas_limit, data)
-                .sign(&PathBuf::from(&args[2]))
+            let (gas_limit, data) = if args.len() == 8 { (args[6].as_str(), args[7].as_str()) } else { ("0x186a0", "") };
+            Transaction::new(&args[4], &to_hex(&args[5]), gas_limit, data)
+                .sign(&PathBuf::from(&args[2]), &args[3])
                 .send();
         }
         _ => panic!("Unexpected args.")

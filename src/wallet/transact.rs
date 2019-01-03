@@ -34,7 +34,7 @@ pub fn sign_transaction_with_random_wallet<'a>(to: &'a str, value: &'a str, gas_
             .unwrap();
 
         if check_balance(from, value, gas_limit) {
-            return Transaction::new(to, value, gas_limit, data).sign(&wallet).to_owned();
+            return Transaction::new(to, value, gas_limit, data).sign(&wallet, "123456789").to_owned();
         } else {
             guard.update(&wallet);
             continue;
@@ -56,7 +56,7 @@ pub fn dispatch_link_token() {
         if check_balance(from, &value, "0x186a0") {
             let to = to.file_name().unwrap().to_str().unwrap();
             Transaction::new(to, &value, "0x186a0", "")
-                .sign(&premier_wallet)
+                .sign(&premier_wallet, "123456789")
                 .send();
 
             println!("[{}/50] Wallet [{}] -> Wallet [{}].", i + 1, from, to);
@@ -96,7 +96,7 @@ pub fn collect_link_token() {
                 let value = u128::from_str_radix(&remain[2..], 16).unwrap() - 0x2386f26fc10000;
 
                 Transaction::new(&premier_wallet, &value.to_string(), "0x186a0", "")
-                    .sign(&wallet)
+                    .sign(&wallet, "123456789")
                     .send();
 
                 println!("Wallet [{}] -> Wallet [{}].", from, premier_wallet);
