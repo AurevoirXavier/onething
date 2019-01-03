@@ -51,15 +51,17 @@ fn build_payload(kind: u8) -> Value {
 }
 
 fn save_and_pay_order(account: &str, data: &Value) {
-    // TODO Temporarily unavailable
-//    let to = data["to"].as_str().unwrap().to_owned();
-//    let value = data["value"].as_str().unwrap().to_owned();
-//    let gas_limit = format!("{:#x}", data["gas_limit"].as_u64().unwrap());
-//    let data = data["data"].as_str().unwrap().to_owned();
+    let to = data["to"].as_str().unwrap();
+    let value = data["value"].as_str().unwrap();
+    let gas_limit = format!("{:#x}", data["gas_limit"].as_u64().unwrap());
+    let prepay_id = data["prepay_id"].as_str().unwrap();
+    let service_id = data["service_id"].as_u64().unwrap();
+    let sign = data["sign"].as_str().unwrap();
+    let data = data["data"].as_str().unwrap();
 
-//    writeln!(ORDERS.lock().unwrap(), "{}-{}-{}-{}-{}", to, value, gas_limit, data, account).unwrap();
-    writeln!(ORDERS.lock().unwrap(), "{}-{}", data["value"].as_str().unwrap(), account).unwrap();
+    writeln!(ORDERS.lock().unwrap(), "{}-{}-{}-{}-{}-{}-{}-{}", to, value, gas_limit, prepay_id, service_id, sign, data, account).unwrap();
 
+//     TODO Temporarily unavailable
 //    TRANSACTION_THREADS.lock()
 //        .unwrap()
 //        .push(thread::spawn(move || {

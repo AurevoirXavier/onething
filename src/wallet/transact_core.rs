@@ -96,7 +96,7 @@ impl<'a> Transaction<'a> {
                 .unwrap()
         };
 
-//    println!("{:?}", signed_transaction);  // TODO Debug
+//        println!("{:?}", signed_transaction);  // TODO Debug
 
         self.signed_raw_transaction = signed_transaction.getattr(py, "rawTransaction")
             .unwrap()
@@ -108,7 +108,7 @@ impl<'a> Transaction<'a> {
         self
     }
 
-    pub fn send(&mut self) -> bool{
+    pub fn send(&mut self) -> bool {
         loop {
             match default_client_builder(10)
                 .default_headers(TRANSACTION_HEADERS.clone())
